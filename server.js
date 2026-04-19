@@ -1,6 +1,9 @@
 require('dotenv').config()
 const express = require('express')
 const path = require('path')
+const {v4: uuidv4} = require('uuid')
+const bcrypt = require('bcrypt')
+const sqlite3 = require('sqlite3')
 
 const app = express()
 const PORT = process.env.PORT || 8000
@@ -10,6 +13,38 @@ app.use(express.json())
 
 // Serve all static files (CSS, JS, Vendor, Images) from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')))
+
+const db = new sqlite3.Database('database.db', (err) => {
+    if (err) {
+        console.log(`Error opening database: ${err.message}`)
+    } else {
+        console.log("Connected to database.db")
+    }
+})
+
+
+app.post('/api/register', (req, res) => {
+    const {email, password} = req.body
+    const userId = uuidv4()
+    try {
+        const strHashedPassword = bcrypt.hashSync(password, 12)
+        const strQuery = "INSERT INTO tblUsers (id, email, password_hash) VALUES (?, ?, ?)"
+        db.run(strQuery, [userId, email, strHashedPassword], function(err) {
+            if (err) {
+                if (err.message.includes("UNIQUE constraint failed")) {
+                    res.status(400).json({error: "An account is already registered with that email"})
+                } else {
+                    res.status(400).json({error: err.message})
+                }
+            } else {
+                res.status(201).json({message: "User registered", userId: userId})
+            }
+        })
+    } catch(err) {
+        res.status(500).json({error: err.message})
+    }
+})
+
 
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
