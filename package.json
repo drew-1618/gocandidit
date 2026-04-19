@@ -1,0 +1,26 @@
+{
+  "name": "gocandidit",
+  "version": "1.0.0",
+  "description": "**Intentional Resumes. Authentic Results.**",
+  "homepage": "https://github.com/drew-1618/gocandidit#readme",
+  "bugs": {
+    "url": "https://github.com/drew-1618/gocandidit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drew-1618/gocandidit.git"
+  },
+  "license": "ISC",
+  "author": "Andrew Johnson",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
