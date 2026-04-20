@@ -8,3 +8,4 @@ Use Nodemon to automatically restart backend server when saving a file in develo
 CanvaAI to generate logo and favicon.
 Gemini to help with database creation.
 Gemini help with authorization function in server.js and passing it in with the routes
+Gemini help with clearing old sessions after connecting to database

@@ -14,11 +14,22 @@ app.use(express.json())
 // Serve all static files (CSS, JS, Vendor, Images) from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')))
 
+// connect to database
 const db = new sqlite3.Database('database.db', (err) => {
     if (err) {
         console.log(`Error opening database: ${err.message}`)
     } else {
         console.log("Connected to database.db")
+    }
+})
+
+// delete sessions older than 12 hours
+const strCleanupQuery = "DELETE FROM tblSessions WHERE created_at <= datetime('now', '-12 hours')"
+db.run(strCleanupQuery, (err) => {
+    if (err) {
+        console.error("Session cleanup failed: ", err.message)
+    } else {
+        console.log("Old sessions cleared")
     }
 })
 
