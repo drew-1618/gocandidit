@@ -23,6 +23,25 @@ const db = new sqlite3.Database('database.db', (err) => {
 })
 
 
+function authorize(req, res, next) {
+    // look for the sessionId in the headers
+    const sessionId = req.headers['x-session-id']
+    if (!sessionId) {
+        res.status(401).json({error: "No session found. Please log in"})
+    } else {
+        const strQuery = "SELECT user_id FROM tblSessions WHERE session_id = ?"
+        db.get(strQuery, [sessionId], (err, row) => {
+            if (err || !row) {
+                res.status(401).json({error: "Invalid or expired session"})
+            } else {
+                req.userId = row.user_id
+                next()
+            }
+        })
+    }
+}
+
+
 // --- REGISTER ROUTE ---
 app.post('/api/register', (req, res) => {
     const {email, password} = req.body
@@ -54,34 +73,35 @@ app.post('/api/login', (req, res) => {
     db.get(strQuery, [email], (err, user) => {
         if (err) {
             res.status(500).json({error: "Database error"})
-        }
-        if (!user) {
+        } else if (!user) {
             res.status(401).json({error: "Invalid email or password"})
-        }
+        } else {
 
-        // check password
-        const boolValidPassword = bcrypt.compareSync(password, user.password_hash)
-        if (!boolValidPassword) {
-            res.status(401).json({error: "Invalid email or password"})
-        }
-
-        // success
-        const strSessionId = uuidv4()
-        const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
-        db.run(strSessionQuery, [strSessionId, user.id], (err) => {
-            if (err) {
-                res.status(500).json({error: "Session creation failed"})
+            // check password
+            const boolValidPassword = bcrypt.compareSync(password, user.password_hash)
+            if (!boolValidPassword) {
+                res.status(401).json({error: "Invalid email or password"})
             } else {
-                res.status(201).json({message: "Login successful", sessionId: strSessionId})
+                // success
+                const strSessionId = uuidv4()
+                const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
+                db.run(strSessionQuery, [strSessionId, user.id], (err) => {
+                    if (err) {
+                        res.status(500).json({error: "Session creation failed"})
+                    } else {
+                        res.status(201).json({message: "Login successful", sessionId: strSessionId})
+                    }
+                })
             }
-        })
+        }
     })
 })
 
 
 // --- JOBS ROUTES ---
-app.post('/api/jobs', (req, res) => {
-    const {userId, company, role, description, job_date} = req.body
+app.post('/api/jobs', authorize, (req, res) => {
+    const {company, role, description, job_date} = req.body
+    const userId = req.userId
     const jobId = uuidv4()
 
     if (!userId || !company || !role) {
@@ -89,16 +109,17 @@ app.post('/api/jobs', (req, res) => {
     }
 
     const strQuery = "INSERT INTO tblJobs (id, user_id, company, role, description, job_date) VALUES (?, ?, ?, ?, ?, ?)"
-    db.run(strQuery, [jobId, userId, company, role, description, job_date], function(err) {
+    db.run(strQuery, [jobId, userId, company, role, description, job_date], (err) => {
         if (err) {
             res.status(500).json({error: err.message})
+        } else {
+            res.status(201).json({message: "Job saved to vault", jobId: jobId})
         }
-        res.status(201).json({message: "Job saved to vault", jobId: jobId})
     })
 })
 
-app.get('/api/jobs/:userId', (req, res) => {
-    const {userId} = req.params
+app.get('/api/jobs/', authorize, (req, res) => {
+    const userId = req.userId
     const strQuery = "SELECT * FROM tblJobs WHERE user_id = ? ORDER BY created_at DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
@@ -111,8 +132,9 @@ app.get('/api/jobs/:userId', (req, res) => {
 
 
 // --- EDUCATION ROUTES ---
-app.post('/api/education', (req, res) => {
-    const {userId, school_name, degree, major, minor, gpa, location, start_date, end_date} = req.body
+app.post('/api/education', authorize, (req, res) => {
+    const {school_name, degree, major, minor, gpa, location, start_date, end_date} = req.body
+    const userId = req.userId
     const eduId = uuidv4()
 
     const strQuery = "INSERT INTO tblEducation (id, user_id, school_name, degree, major, minor, gpa, location, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -125,8 +147,8 @@ app.post('/api/education', (req, res) => {
     })
 })
 
-app.get('/api/education/:userId', (req, res) => {
-    const {userId} = req.params
+app.get('/api/education/', authorize, (req, res) => {
+    const userId = req.userId
     const strQuery = "SELECT * FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
@@ -139,8 +161,9 @@ app.get('/api/education/:userId', (req, res) => {
 
 
 // --- PROJECT ROUTES ---
-app.post('/api/projects', (req, res) => {
-    const {userId, title, description, tech_stack, link} = req.body
+app.post('/api/projects', authorize, (req, res) => {
+    const {title, description, tech_stack, link} = req.body
+    const userId = req.userId
     const projectId = uuidv4()
 
     const strQuery = "INSERT INTO tblProjects (id, user_id, title, description, tech_stack, link) VALUES (?, ?, ?, ?, ?, ?)"
@@ -153,8 +176,8 @@ app.post('/api/projects', (req, res) => {
     })
 })
 
-app.get('/api/projects/:userId', (req, res) => {
-    const {userId} = req.params
+app.get('/api/projects/', authorize, (req, res) => {
+    const userId = req.userId
     const strQuery = "SELECT * FROM tblProjects WHERE user_id = ? ORDER by created_at DESC"
 
     db.all(strQuery, [userId], (err, rows) => {
@@ -168,8 +191,8 @@ app.get('/api/projects/:userId', (req, res) => {
 
 
 //  --- EXTRA USER PROFILE FIELDS ROUTE ---
-app.put('/api/users/:userId/profile', (req, res) => {
-    const {userId} = req.params
+app.put('/api/users/profile', authorize, (req, res) => {
+    const userId = req.userId
     const {full_name, skills, phone, linkedin_url, github_url, summary} = req.body
 
     const strQuery = "UPDATE tblUsers SET full_name=?, skills=?, phone=?, linkedin_url=?, github_url=?, summary=? WHERE id = ?"
