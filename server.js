@@ -129,6 +129,35 @@ app.get('/api/education/:userId', (req, res) => {
     })
 })
 
+
+// --- PROJECT ROUTES ---
+app.post('/api/projects', (req, res) => {
+    const {userId, title, description, tech_stack, link} = req.body
+    const projectId = uuidv4()
+
+    const strQuery = "INSERT INTO tblProjects (id, user_id, title, description, tech_stack, link) VALUES (?, ?, ?, ?, ?, ?)"
+    db.run(strQuery, [projectId, userId, title, description, tech_stack, link], (err) => {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else {
+            res.status(201).json({message: "Project added", projectId: projectId})
+        }
+    })
+})
+
+app.get('/api/projects/:userId', (req, res) => {
+    const {userId} = req.params
+    const strQuery = "SELECT * FROM tblProjects WHERE user_id = ? ORDER by created_at DESC"
+
+    db.all(strQuery, [userId], (err, rows) => {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else {
+            res.status(200).json(rows)
+        }
+    })
+})
+
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
 })
