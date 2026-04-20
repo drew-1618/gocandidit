@@ -4,6 +4,7 @@ const path = require('path')
 const {v4: uuidv4} = require('uuid')
 const bcrypt = require('bcrypt')
 const sqlite3 = require('sqlite3')
+const { error } = require('console')
 
 const app = express()
 const PORT = process.env.PORT || 8000
@@ -68,6 +69,36 @@ app.post('/api/login', (req, res) => {
     })
 })
 
+
+app.post('/api/jobs', (req, res) => {
+    const {userId, company, role, description, job_date} = req.body
+    const jobId = uuidv4()
+
+    if (!userId || !company || !role) {
+        res.status(400).json({error: "Missing required job fields"})
+    }
+
+    const strQuery = "INSERT INTO tblJobs (id, user_id, company, role, description, job_date) VALUES (?, ?, ?, ?, ?, ?)"
+    db.run(strQuery, [jobId, userId, company, role, description, job_date], function(err) {
+        if (err) {
+            res.status(500).json({error: err.message})
+        }
+        res.status(201).json({message: "Job saved to vault", jobId: jobId})
+    })
+})
+
+
+app.get('/api/jobs/:userId', (req, res) => {
+    const {userId} = req.params
+    const strQuery = "SELECT * FROM tblJobs WHERE user_id = ? ORDER BY created_at DESC"
+    db.all(strQuery, [userId], (err, rows) => {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else {
+            res.status(200).json(rows)
+        }
+    })
+})
 
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
