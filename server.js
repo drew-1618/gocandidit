@@ -27,18 +27,17 @@ function authorize(req, res, next) {
     // look for the sessionId in the headers
     const sessionId = req.headers['x-session-id']
     if (!sessionId) {
-        res.status(401).json({error: "No session found. Please log in"})
-    } else {
-        const strQuery = "SELECT user_id FROM tblSessions WHERE session_id = ?"
-        db.get(strQuery, [sessionId], (err, row) => {
-            if (err || !row) {
-                res.status(401).json({error: "Invalid or expired session"})
-            } else {
-                req.userId = row.user_id
-                next()
-            }
-        })
+        return res.status(401).json({error: "No session found. Please log in"})
     }
+    const strQuery = "SELECT user_id FROM tblSessions WHERE session_id = ?"
+    db.get(strQuery, [sessionId], (err, row) => {
+        if (err || !row) {
+            res.status(401).json({error: "Invalid or expired session"})
+        } else {
+            req.userId = row.user_id
+            next()
+        }
+    })
 }
 
 
@@ -72,27 +71,27 @@ app.post('/api/login', (req, res) => {
     const strQuery = "SELECT * FROM tblUsers WHERE email = ?"
     db.get(strQuery, [email], (err, user) => {
         if (err) {
-            res.status(500).json({error: "Database error"})
-        } else if (!user) {
+            return res.status(500).json({error: "Database error"})
+        } 
+        if (!user) {
+            return res.status(401).json({error: "Invalid email or password"})
+        }
+
+        // check password
+        const boolValidPassword = bcrypt.compareSync(password, user.password_hash)
+        if (!boolValidPassword) {
             res.status(401).json({error: "Invalid email or password"})
         } else {
-
-            // check password
-            const boolValidPassword = bcrypt.compareSync(password, user.password_hash)
-            if (!boolValidPassword) {
-                res.status(401).json({error: "Invalid email or password"})
-            } else {
-                // success
-                const strSessionId = uuidv4()
-                const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
-                db.run(strSessionQuery, [strSessionId, user.id], (err) => {
-                    if (err) {
-                        res.status(500).json({error: "Session creation failed"})
-                    } else {
-                        res.status(201).json({message: "Login successful", sessionId: strSessionId})
-                    }
-                })
-            }
+            // success
+            const strSessionId = uuidv4()
+            const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
+            db.run(strSessionQuery, [strSessionId, user.id], (err) => {
+                if (err) {
+                    res.status(500).json({error: err.message})
+                } else {
+                    res.status(201).json({message: "Login successful", sessionId: strSessionId})
+                }
+            })
         }
     })
 })
@@ -105,7 +104,7 @@ app.post('/api/jobs', authorize, (req, res) => {
     const jobId = uuidv4()
 
     if (!userId || !company || !role) {
-        res.status(400).json({error: "Missing required job fields"})
+        return res.status(400).json({error: "Missing required job fields"})
     }
 
     const strQuery = "INSERT INTO tblJobs (id, user_id, company, role, description, job_date) VALUES (?, ?, ?, ?, ?, ?)"
