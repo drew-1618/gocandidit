@@ -97,6 +97,19 @@ app.post('/api/login', (req, res) => {
 })
 
 
+// --- LOGOUT ROUTE ---
+app.delete('/api/logout', authorize, (req, res) => {
+    const sessionId = req.headers['x-session-id']
+    const strQuery = "DELETE FROM tblSessions WHERE session_id = ?"
+    db.run(strQuery, [sessionId], (err) => {
+        if (err) {
+            return res.status(500).json({error: err.message})
+        }
+        res.status(200).json({message: "Successfully logged out"})
+    })
+})
+
+
 // --- JOBS ROUTES ---
 app.post('/api/jobs', authorize, (req, res) => {
     const {company, role, description, job_date} = req.body
