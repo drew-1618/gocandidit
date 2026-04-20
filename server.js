@@ -9,7 +9,6 @@ const { error } = require('console')
 const app = express()
 const PORT = process.env.PORT || 8000
 
-// Middleware to handle JSON data (for Gemini API calls later)
 app.use(express.json())
 
 // Serve all static files (CSS, JS, Vendor, Images) from the 'public' folder
@@ -23,7 +22,7 @@ const db = new sqlite3.Database('database.db', (err) => {
     }
 })
 
-
+// --- REGISTER ROUTE ---
 app.post('/api/register', (req, res) => {
     const {email, password} = req.body
     const userId = uuidv4()
@@ -46,7 +45,7 @@ app.post('/api/register', (req, res) => {
     }
 })
 
-
+// --- LOGIN ROUTE ---
 app.post('/api/login', (req, res) => {
     const {email, password} = req.body
     const strQuery = "SELECT * FROM tblUsers WHERE email = ?"
@@ -70,6 +69,7 @@ app.post('/api/login', (req, res) => {
 })
 
 
+// --- JOBS ROUTES ---
 app.post('/api/jobs', (req, res) => {
     const {userId, company, role, description, job_date} = req.body
     const jobId = uuidv4()
@@ -87,7 +87,6 @@ app.post('/api/jobs', (req, res) => {
     })
 })
 
-
 app.get('/api/jobs/:userId', (req, res) => {
     const {userId} = req.params
     const strQuery = "SELECT * FROM tblJobs WHERE user_id = ? ORDER BY created_at DESC"
@@ -99,6 +98,10 @@ app.get('/api/jobs/:userId', (req, res) => {
         }
     })
 })
+
+
+// --- EDUCATION ROUTES ---
+
 
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
