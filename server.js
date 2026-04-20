@@ -22,6 +22,7 @@ const db = new sqlite3.Database('database.db', (err) => {
     }
 })
 
+
 // --- REGISTER ROUTE ---
 app.post('/api/register', (req, res) => {
     const {email, password} = req.body
@@ -44,6 +45,7 @@ app.post('/api/register', (req, res) => {
         res.status(500).json({error: err.message})
     }
 })
+
 
 // --- LOGIN ROUTE ---
 app.post('/api/login', (req, res) => {
@@ -101,7 +103,31 @@ app.get('/api/jobs/:userId', (req, res) => {
 
 
 // --- EDUCATION ROUTES ---
+app.post('/api/education', (req, res) => {
+    const {userId, school_name, degree, major, minor, gpa, location, start_date, end_date} = req.body
+    const eduId = uuidv4()
 
+    const strQuery = "INSERT INTO tblEducation (id, user_id, school_name, degree, major, minor, gpa, location, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    db.run(strQuery, [eduId, userId, school_name, degree, major, minor, gpa, location, start_date, end_date], function(err) {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else {
+            res.status(201).json({message: "Education record added", educationId: eduId})
+        }
+    })
+})
+
+app.get('/api/education/:userId', (req, res) => {
+    const {userId} = req.params
+    const strQuery = "SELECT * FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC"
+    db.all(strQuery, [userId], (err, rows) => {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else {
+            res.status(200).json(rows)
+        }
+    })
+})
 
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
