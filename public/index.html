@@ -20,22 +20,44 @@
             <a class="navbar-brand d-flex align-items-center">
             <img src="assets/img/logo.png" alt="GoCandidIt Logo" height="45" class="d-inline-block align-text-top me-2">
         </a>
+        <button id="btnLogout" class="btn btn-outline-danger d-none" onclick="logout()">Logout</button>
         </div>
     </nav>
 
     <div class="container mt-5">
-        <div class="row">
+        <div id="section-auth" class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 id="auth-title" class="text-center mb-4">Login</h3>
+                        <div class="mb-3">
+                            <label class="form-label">Email address</label>
+                            <input type="email" id="txtEmail" class="form-control" placeholder="name@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="txtPassword" class="form-control">
+                        </div>
+                        <div id="divConfirmPassword" class="mb-3 d-none">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" id="txtConfirmPassword" class="form-control">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button id="btnPrimaryAuth" class="btn btn-primary" onclick="handleAuth()">Login</button>
+                            <button class="btn btn-link btn-sm" id="btnToggleAuth" onclick="toggleAuthMode()">Need an account? Register</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-vault" class="row d-none">
             <div class="col-md-8 offset-md-2">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h2 class="card-title">Welcome to GoCandidIt</h2>
-                        <p class="text-muted">Intentional Resumes. Authentic Results.</p>
-                        
-                        <div id="editor" style="height: 200px;">
-                            <p>Start typing your job responsibilities here...</p>
-                        </div>
-
-                        <button class="btn btn-primary mt-3" onclick="testAlert()">Test</button>
+                        <h2 class="card-title">Welcome to your Vault</h2>
+                        <div id="editor" style="height: 200px;"></div>
+                        <button class="btn btn-success mt-3">Save to Vault</button>
                     </div>
                 </div>
             </div>

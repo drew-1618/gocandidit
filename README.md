@@ -9,3 +9,4 @@ CanvaAI to generate logo and favicon.
 Gemini to help with database creation.
 Gemini help with authorization function in server.js and passing it in with the routes
 Gemini help with clearing old sessions after connecting to database
+Gemini to help speed up logging in and registration for single page application

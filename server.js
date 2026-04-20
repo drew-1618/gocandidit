@@ -62,13 +62,21 @@ app.post('/api/register', (req, res) => {
         db.run(strQuery, [userId, email, strHashedPassword], function(err) {
             if (err) {
                 if (err.message.includes("UNIQUE constraint failed")) {
-                    res.status(400).json({error: "An account is already registered with that email"})
-                } else {
-                    res.status(400).json({error: err.message})
+                    return res.status(400).json({error: "An account is already registered with that email"})
                 }
-            } else {
-                res.status(201).json({message: "User registered", userId: userId})
+                return res.status(400).json({error: err.message})
+                
             }
+
+            // create a session immediately after registration
+            const strSessionId = uuidv4()
+            const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
+            db.run(strSessionQuery, [strSessionId, userId], (sessionErr) => {
+                if (sessionErr) {
+                    return res.status(500).json({error: "User registered, but session creation failed"})
+                }
+                res.status(201).json({message: "User registered and logged in", userId: userId, sessionId: strSessionId})
+            })            
         })
     } catch(err) {
         res.status(500).json({error: err.message})
