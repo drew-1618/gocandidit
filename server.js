@@ -66,7 +66,15 @@ app.post('/api/login', (req, res) => {
         }
 
         // success
-        res.status(200).json({message: "Login successful", userId: user.id, email: user.email})
+        const strSessionId = uuidv4()
+        const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
+        db.run(strSessionQuery, [strSessionId, user.id], (err) => {
+            if (err) {
+                res.status(500).json({error: "Session creation failed"})
+            } else {
+                res.status(201).json({message: "Login successful", sessionId: strSessionId})
+            }
+        })
     })
 })
 
