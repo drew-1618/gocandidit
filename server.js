@@ -158,6 +158,22 @@ app.get('/api/projects/:userId', (req, res) => {
     })
 })
 
+
+//  --- EXTRA USER PROFILE FIELDS ROUTE ---
+app.put('/api/users/:userId/profile', (req, res) => {
+    const {userId} = req.params
+    const {full_name, skills, phone, linkedin_url, github_url, summary} = req.body
+
+    const strQuery = "UPDATE tblUsers SET full_name=?, skills=?, phone=?, linkedin_url=?, github_url=?, summary=? WHERE id = ?"
+    db.run(strQuery, [full_name, skills, phone, linkedin_url, github_url, summary, userId], (err) => {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else {
+            res.status(201).json({message: "Profile updated successfully"})
+        }
+    })
+})
+
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
 })
