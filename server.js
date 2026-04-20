@@ -46,6 +46,29 @@ app.post('/api/register', (req, res) => {
 })
 
 
+app.post('/api/login', (req, res) => {
+    const {email, password} = req.body
+    const strQuery = "SELECT * FROM tblUsers WHERE email = ?"
+    db.get(strQuery, [email], (err, user) => {
+        if (err) {
+            res.status(500).json({error: "Database error"})
+        }
+        if (!user) {
+            res.status(401).json({error: "Invalid email or password"})
+        }
+
+        // check password
+        const boolValidPassword = bcrypt.compareSync(password, user.password_hash)
+        if (!boolValidPassword) {
+            res.status(401).json({error: "Invalid email or password"})
+        }
+
+        // success
+        res.status(200).json({message: "Login successful", userId: user.id, email: user.email})
+    })
+})
+
+
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
 })
