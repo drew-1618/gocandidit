@@ -94,9 +94,23 @@ function switchTab(tab) {
         formContainer.innerHTML = `
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">School</label><input type="text" id="eduSchool" class="form-control" placeholder="University Name"></div>
-                <div class="col-md-6"><label class="form-label">Degree/Major</label><input type="text" id="eduDegree" class="form-control" placeholder="e.g. B.S. Computer Science"></div>
+                <div class="col-md-6"><label class="form-label">Location</label><input type="text" id="eduLocation" class="form-control" placeholder="City, State"></div>
+                <div class="col-md-6"><label class="form-label">Degree Type</label>
+                    <select id="eduDegree" class="form-select">
+                        <option value="B.S.">Bachelor of Science (B.S.)</option>
+                        <option value="B.A.">Bachelor of Arts (B.A.)</option>
+                        <option value="A.S.">Associate of Science (A.S.)</option>
+                        <option value="A.A.">Associate of Arts (A.A.)</option>
+                        <option value="M.S.">Master of Science (M.S.)</option>
+                        <option value="Ph.D.">Doctorate (Ph.D.)</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-6"><label class="form-label">Major</label><input type="text" id="eduMajor" class="form-control" placeholder="e.g. Computer Science"></div>
+                <div class="col-md-6"><label class="form-label">Minor</label><input type="text" id="eduMinor" class="form-control" placeholder="e.g. Mathematics"></div>
                 <div class="col-md-6"><label class="form-label">GPA</label><input type="text" id="eduGpa" class="form-control" placeholder="0.00"></div>
-                <div class="col-md-6"><label class="form-label">Dates</label><input type="text" id="eduDate" class="form-control" placeholder="Month Year - Month Year"></div>
+                <div class="col-md-6"><label class="form-label">Start Date</label><input type="text" id="eduStartDate" class="form-control" placeholder="Month Year"></div>
+                <div class="col-md-6"><label class="form-label">End Date (or Expected)</label><input type="text" id="eduEndDate" class="form-control" placeholder="Month Year"></div>
             </div>`
     } else if (tab === 'projects') {
         title.innerText = "Technical Projects"
@@ -143,9 +157,13 @@ async function saveToVault() {
         strEndpoint = '/api/education'
         objPayload = {
             school_name: document.getElementById('eduSchool').value.trim(),
+            location: document.getElementById('eduLocation').value.trim(),
             degree: document.getElementById('eduDegree').value.trim(),
+            major: document.getElementById('eduMajor').value.trim(),
+            minor: document.getElementById('eduMinor').value.trim(),
             gpa: document.getElementById('eduGpa').value.trim(),
-            end_date: document.getElementById('eduDate').value.trim(),
+            start_date: document.getElementById('eduStartDate').value.trim(),
+            end_date: document.getElementById('eduEndDate').value.trim(),
             description: description
         }
     } else if (currentTab === 'projects') {
