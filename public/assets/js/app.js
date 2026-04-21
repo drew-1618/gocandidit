@@ -7,20 +7,29 @@ function updateUI() {
     const authSection = document.getElementById('section-auth')
     const vaultSection = document.getElementById('section-vault')
     const logoutBtn = document.getElementById('btnLogout')
+    const navButtons = document.querySelectorAll('.navbar .btn-outline')
 
     if (sessionId) {
         authSection.classList.add('d-none')
         vaultSection.classList.remove('d-none')
         logoutBtn.classList.remove('d-none')
+        navButtons.forEach(btn => btn.classList.remove('d-none'))
     } else {
         authSection.classList.remove('d-none')
         vaultSection.classList.add('d-none')
         logoutBtn.classList.add('d-none')
+        navButtons.forEach(btn => btn.classList.add('d-none'))
+
     }
 }
 
 
 function goHome() {
+    const sessionId = localStorage.getItem('sessionId')
+    if (!sessionId) {
+        updateUI()
+        return
+    }
     // show welcome, hide editor
     document.getElementById('view-welcome').classList.remove('d-none')
     document.getElementById('view-editor').classList.add('d-none')
@@ -32,6 +41,14 @@ function goHome() {
 
 let currentTab = 'jobs'
 function switchTab(tab) {
+    // prevent access if not logged in
+    const sessionId = localStorage.getItem('sessionId')
+    if (!sessionId) {
+        alert("Please log in to access the vault")
+        updateUI()
+        return
+    }
+    
     currentTab = tab
 
     document.getElementById('view-welcome').classList.add('d-none')
@@ -44,7 +61,7 @@ function switchTab(tab) {
     const editorLabel = document.getElementById('lblEditor')
 
     // toggle welcome visibility
-    welcomeView.classList.add('d-none');
+    welcomeView.classList.add('d-none')
     editorView.classList.remove('d-none')
 
     // clear previous editor content
