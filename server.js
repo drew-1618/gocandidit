@@ -131,7 +131,7 @@ app.delete('/api/logout', authorize, (req, res) => {
 
 // --- JOBS ROUTES ---
 app.post('/api/jobs', authorize, (req, res) => {
-    const {company, location, role, description, job_date} = req.body
+    const {company, location, role, start_date, end_date, description} = req.body
     const userId = req.userId
     const jobId = uuidv4()
 
@@ -139,8 +139,8 @@ app.post('/api/jobs', authorize, (req, res) => {
         return res.status(400).json({error: "Missing required job fields"})
     }
 
-    const strQuery = "INSERT INTO tblJobs (id, user_id, company, role, description, job_date) VALUES (?, ?, ?, ?, ?, ?)"
-    db.run(strQuery, [jobId, userId, company, role, description, job_date], (err) => {
+    const strQuery = "INSERT INTO tblJobs (id, user_id, company, location, role, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    db.run(strQuery, [jobId, userId, company, location, role, start_date, end_date, description], (err) => {
         if (err) {
             res.status(500).json({error: err.message})
         } else {

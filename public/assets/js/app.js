@@ -83,11 +83,12 @@ function switchTab(tab) {
         editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
-                <div class="col-md-6"><label class="form-label">Company</label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"></div>
-                <div class="col-md-6"><label class="form-label">Role</label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"></div>
-                <div class="col-md-6"><label class="form-label">Location</label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"></div>
-                <div class="col-md-6"><label class="form-label">Dates</label><input type="text" id="jobDate" class="form-control" placeholder="Month Year - Month Year"></div>
-            </div>`
+                <div class="col-md-6"><label class="form-label">Company <span class="text-danger">*</span></label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"><div class="invalid-feedback">Please enter the company name.</div></div>
+                <div class="col-md-6"><label class="form-label">Location <span class="text-danger">*</span></label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the company location.</div></div>
+                <div class="col-md-6"><label class="form-label">Role <span class="text-danger">*</span></label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"><div class="invalid-feedback">Please enter the job title.</div></div>
+                <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="text" id="jobStartDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the start date.</div></div>
+                <div class="col-md-6"><label class="form-label">End Date (or Present) <span class="text-danger">*</span></label><input type="text" id="jobEndDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the end date or Present.</div></div>
+                </div>`
     } else if (tab === 'education') {
         title.innerText = "Education History"
         editorLabel.innerText = "Additional Details & Achievements"
@@ -149,11 +150,14 @@ async function saveToVault() {
 
     if (currentTab === 'jobs') {
         strEndpoint = '/api/jobs'
+        arrRequiredFields = ['jobCompany', 'jobLocation', 'jobRole', 'jobStartDate', 'jobEndDate']
         objPayload = {
             company: document.getElementById('jobCompany').value.trim(),
+            location: document.getElementById('jobLocation').value.trim(),
             role: document.getElementById('jobRole').value.trim(),
             location: document.getElementById('jobLocation').value.trim(),
-            job_date: document.getElementById('jobDate').value.trim(),
+            start_date: document.getElementById('jobStartDate').value.trim(),
+            end_date: document.getElementById('jobEndDate').value.trim(),
             description: description
         }
     } else if (currentTab === 'education') {
