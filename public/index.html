@@ -9,14 +9,22 @@
     
     <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="assets/vendor/quill/quill.snow.css">
+
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
     
     <!-- Likely not needed -->
     <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-dark bg-light">
-        <div class="container">
+    <!-- navbar -->
+    <nav class="navbar navbar-light bg-light border-bottom sticky-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#vaultSidebar">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
             <a class="navbar-brand d-flex align-items-center">
             <img src="assets/img/logo.png" alt="GoCandidIt Logo" height="45" class="d-inline-block align-text-top me-2">
         </a>
@@ -24,7 +32,8 @@
         </div>
     </nav>
 
-    <div class="container mt-5">
+    <div class="container-fluid py-4">
+        <!-- login/register -->
         <div id="section-auth" class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card shadow">
@@ -52,15 +61,51 @@
         </div>
 
         <div id="section-vault" class="row d-none">
-            <div class="col-md-8 offset-md-2">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h2 class="card-title">Welcome to your Vault</h2>
-                        <div id="editor" style="height: 200px;"></div>
-                        <button class="btn btn-success mt-3">Save to Vault</button>
+            
+            <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="vaultSidebar" style="width: 280px;">
+                <div class="offcanvas-header border-bottom border-secondary">
+                    <h5 class="offcanvas-title">Vault Navigation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body p-0">
+                    <div class="list-group list-group-flush">
+                        <button class="list-group-item list-group-item-action bg-dark text-white border-secondary py-3" onclick="switchTab('jobs')">
+                            <i class="fas fa-briefcase me-2"></i> Work History
+                        </button>
+                        <button class="list-group-item list-group-item-action bg-dark text-white border-secondary py-3" onclick="switchTab('education')">
+                            <i class="fas fa-graduation-cap me-2"></i> Education
+                        </button>
+                        <button class="list-group-item list-group-item-action bg-dark text-white border-secondary py-3" onclick="switchTab('projects')">
+                            <i class="fas fa-code me-2"></i> Projects
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <main class="col-12 col-lg-10 offset-lg-1">
+                <div id="vault-content-area" class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h2 id="view-title" class="h4 mb-0">Work Experience</h2>
+                        <hr>
+                        <div id="divDynamicFormFields" class="mb-3">
+                            <!-- Probably replace this with another default view later -->
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Company</label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"></div>
+                                <div class="col-md-6"><label class="form-label">Role</label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"></div>
+                                <div class="col-md-6"><label class="form-label">Location</label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"></div>
+                                <div class="col-md-6"><label class="form-label">Dates</label><input type="text" id="jobDate" class="form-control" placeholder="Month Year - Month Year"></div>
+                            </div>    
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Details & Achievements</label>
+                            <div id="editor" style="height: 250px;"></div>
+                        </div>
+                        <div class="d-grid d-md-flex justify-content-md-end">
+                            <button class="btn btn-success px-5" onclick="saveToVault()">Save to Vault</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
