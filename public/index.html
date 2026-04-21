@@ -69,6 +69,9 @@
                 </div>
                 <div class="offcanvas-body p-0">
                     <div class="list-group list-group-flush">
+                        <button class="list-group-item list-group-item-action bg-dark text-white border-secondary py-3" onclick="switchTab('profile')">
+                            <i class="fas fa-user-circle me-2"></i> Personal Profile
+                        </button>
                         <button class="list-group-item list-group-item-action bg-dark text-white border-secondary py-3" onclick="switchTab('jobs')">
                             <i class="fas fa-briefcase me-2"></i> Work History
                         </button>
@@ -97,7 +100,7 @@
                             </div>    
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Details & Achievements</label>
+                            <label id="lblEditor" class="form-label">Details & Achievements</label>
                             <div id="editor" style="height: 250px;"></div>
                         </div>
                         <div class="d-grid d-md-flex justify-content-md-end">

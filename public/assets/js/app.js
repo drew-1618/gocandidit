@@ -25,12 +25,25 @@ function switchTab(tab) {
     currentTab = tab
     const title = document.getElementById('view-title')
     const formContainer = document.getElementById('divDynamicFormFields')
+    const editorLabel = document.getElementById('lblEditor')
 
     // clear previous editor content
     quill.setContents([])
 
-    if (tab === 'jobs') {
+    if (tab === 'profile') {
+        title.innerText = "Personal Information"
+        editorLabel.innerText = "Professional Summary / Bio"
+        formContainer.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-12"><label class="form-label">Full Name</label><input type="text" id="profFullName" class="form-control" placeholder="First Last"></div>
+                <div class="col-md-6"><label class="form-label">Phone Number</label><input type="tel" id="profPhone" class="form-control" placeholder="(000) 000-0000"></div>
+                <div class="col-md-6"><label class="form-label">LinkedIn URL</label><input type="url" id="profLinkedIn" class="form-control" placeholder="https://linkedin.com/in/..."></div>
+                <div class="col-md-6"><label class="form-label">GitHub URL</label><input type="url" id="profGitHub" class="form-control" placeholder="https://github.com/..."></div>
+                <div class="col-md-6"><label class="form-label">Professional Skills</label><input type="text" id="profSkills" class="form-control" placeholder="Python, Node.js, C++"></div>
+            </div>`
+    } else if (tab === 'jobs') {
         title.innerText = "Work Experience"
+        editorLabel.innerText = "Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">Company</label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"></div>
@@ -40,6 +53,7 @@ function switchTab(tab) {
             </div>`
     } else if (tab === 'education') {
         title.innerText = "Education History"
+        editorLabel.innerText = "Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">School</label><input type="text" id="eduSchool" class="form-control" placeholder="University Name"></div>
@@ -49,6 +63,7 @@ function switchTab(tab) {
             </div>`
     } else if (tab === 'projects') {
         title.innerText = "Technical Projects"
+        editorLabel.innerText = "Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
                 <div class="col-md-12"><label class="form-label">Project Title</label><input type="text" id="projTitle" class="form-control" placeholder="Project Name"></div>
@@ -60,7 +75,10 @@ function switchTab(tab) {
     // auto close sidebar on mobile
     const sidebar = document.getElementById('vaultSidebar')
     const instance = bootstrap.Offcanvas.getInstance(sidebar)
-    if (instance) instance.hide()
+    if (!instance) {
+        instance = new bootstrap.Offcanvas(sidebar)
+    }
+    instance.hide()
 }
 
 
