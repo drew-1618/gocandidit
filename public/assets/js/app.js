@@ -80,7 +80,7 @@ function switchTab(tab) {
             </div>`
     } else if (tab === 'jobs') {
         title.innerText = "Work Experience"
-        editorLabel.innerText = "Details & Achievements"
+        editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">Company</label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"></div>
@@ -90,7 +90,7 @@ function switchTab(tab) {
             </div>`
     } else if (tab === 'education') {
         title.innerText = "Education History"
-        editorLabel.innerText = "Details & Achievements"
+        editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">School <span class="text-danger">*</span></label><input type="text" id="eduSchool" class="form-control" placeholder="University Name"><div class="invalid-feedback">Please enter the university name.</div></div>
@@ -116,7 +116,7 @@ function switchTab(tab) {
             </div>`
     } else if (tab === 'projects') {
         title.innerText = "Technical Projects"
-        editorLabel.innerText = "Details & Achievements"
+        editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
                 <div class="col-md-12"><label class="form-label">Project Title</label><input type="text" id="projTitle" class="form-control" placeholder="Project Name"></div>
