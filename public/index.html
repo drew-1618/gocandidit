@@ -88,23 +88,47 @@
             <main class="col-12 col-lg-10 offset-lg-1">
                 <div id="vault-content-area" class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <h2 id="view-title" class="h4 mb-0">Work Experience</h2>
-                        <hr>
-                        <div id="divDynamicFormFields" class="mb-3">
-                            <!-- Probably replace this with another default view later -->
-                            <div class="row g-3">
-                                <div class="col-md-6"><label class="form-label">Company</label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"></div>
-                                <div class="col-md-6"><label class="form-label">Role</label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"></div>
-                                <div class="col-md-6"><label class="form-label">Location</label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"></div>
-                                <div class="col-md-6"><label class="form-label">Dates</label><input type="text" id="jobDate" class="form-control" placeholder="Month Year - Month Year"></div>
-                            </div>    
+                        <div id="view-welcome">
+                            <h2 class="h4">Welcome to your Resume Vault</h2>
+                            <p class="text-muted">Select a category from the menu to start organizing your professional history.</p>
+                            <div class="row g-3 mt-2">
+                                <div class="col-6 col-sm-4 col-md-3">
+                                    <div class="card bg-light border-0 text-center p-3" role="button" onclick="switchTab('profile')">
+                                        <h5 class="large fw-bold"><i class="fas fa-user-circle fa-lg mb-2 text-primary"></i> Profile</h5>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3">
+                                    <div class="card bg-light border-0 text-center p-3" role="button" onclick="switchTab('jobs')">
+                                        <h5 class="large fw-bold"><i class="fas fa-briefcase fa-lg mb-2 text-success"></i> Work</h5>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-sm-4 col-md-3">
+                                    <div class="card bg-light border-0 text-center p-3" role="button" onclick="switchTab('projects')">
+                                        <h5 class="large fw-bold"><i class="fas fa-code fa-lg mb-2 text-info"></i> Projects</h5>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label id="lblEditor" class="form-label">Details & Achievements</label>
-                            <div id="editor" style="height: 250px;"></div>
-                        </div>
-                        <div class="d-grid d-md-flex justify-content-md-end">
-                            <button class="btn btn-success px-5" onclick="saveToVault()">Save to Vault</button>
+
+                        <div id="view-editor" class="d-none">
+                            <h2 id="view-title" class="h4 mb-0">Work Experience</h2>
+                            <hr>
+                            <div id="divDynamicFormFields" class="mb-3">
+                                <!-- Probably replace this with another default view later -->
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label class="form-label">Company</label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"></div>
+                                    <div class="col-md-6"><label class="form-label">Role</label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"></div>
+                                    <div class="col-md-6"><label class="form-label">Location</label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"></div>
+                                    <div class="col-md-6"><label class="form-label">Dates</label><input type="text" id="jobDate" class="form-control" placeholder="Month Year - Month Year"></div>
+                                </div>    
+                            </div>
+                            <div class="mb-3">
+                                <label id="lblEditor" class="form-label">Details & Achievements</label>
+                                <div id="editor" style="height: 250px;"></div>
+                            </div>
+                            <div class="d-grid d-md-flex justify-content-md-end">
+                                <button class="btn btn-success px-5" onclick="saveToVault()">Save to Vault</button>
+                            </div>
                         </div>
                     </div>
                 </div>

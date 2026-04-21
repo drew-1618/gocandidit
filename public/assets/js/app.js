@@ -23,9 +23,15 @@ function updateUI() {
 let currentTab = 'jobs'
 function switchTab(tab) {
     currentTab = tab
+    const welcomeView = document.getElementById('view-welcome')
+    const editorView = document.getElementById('view-editor')
     const title = document.getElementById('view-title')
     const formContainer = document.getElementById('divDynamicFormFields')
     const editorLabel = document.getElementById('lblEditor')
+
+    // toggle welcome visibility
+    welcomeView.classList.add('d-none');
+    editorView.classList.remove('d-none')
 
     // clear previous editor content
     quill.setContents([])
