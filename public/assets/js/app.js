@@ -120,9 +120,9 @@ function switchTab(tab) {
         editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
-                <div class="col-md-12"><label class="form-label">Project Title</label><input type="text" id="projTitle" class="form-control" placeholder="Project Name"></div>
+                <div class="col-md-12"><label class="form-label">Project Title <span class="text-danger">*</span></label><input type="text" id="projTitle" class="form-control" placeholder="Project Name"><div class="invalid-feedback">Please enter the project title.</div></div>
+                <div class="col-md-6"><label class="form-label">Tech Stack <span class="text-danger">*</span></label><input type="text" id="projStack" class="form-control" placeholder="e.g., Node.js, ChartJS, SQLite"><div class="invalid-feedback">Please enter the tech stack.</div></div>
                 <div class="col-md-6"><label class="form-label">GitHub/Demo Link</label><input type="text" id="projLink" class="form-control" placeholder="https://github.com/..."></div>
-                <div class="col-md-6"><label class="form-label">Tech Stack</label><input type="text" id="projStack" class="form-control" placeholder="e.g., Node.js, ChartJS, SQLite"></div>
             </div>`
     }
 
@@ -176,6 +176,7 @@ async function saveToVault() {
         }
     } else if (currentTab === 'projects') {
         strEndpoint = '/api/projects'
+        arrRequiredFields = ['projTitle', 'projStack']
         objPayload = {
             title: document.getElementById('projTitle').value.trim(),
             link: document.getElementById('projLink').value.trim(),
