@@ -20,9 +20,23 @@ function updateUI() {
 }
 
 
+function goHome() {
+    // show welcome, hide editor
+    document.getElementById('view-welcome').classList.remove('d-none')
+    document.getElementById('view-editor').classList.add('d-none')
+    
+    // reset currentTab state
+    currentTab = 'welcome'
+}
+
+
 let currentTab = 'jobs'
 function switchTab(tab) {
     currentTab = tab
+
+    document.getElementById('view-welcome').classList.add('d-none')
+    document.getElementById('view-editor').classList.remove('d-none')
+
     const welcomeView = document.getElementById('view-welcome')
     const editorView = document.getElementById('view-editor')
     const title = document.getElementById('view-title')
