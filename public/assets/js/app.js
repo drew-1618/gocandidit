@@ -111,13 +111,87 @@ function switchTab(tab) {
 
     // auto close sidebar on mobile
     const sidebar = document.getElementById('vaultSidebar')
-    const instance = bootstrap.Offcanvas.getInstance(sidebar)
+    let instance = bootstrap.Offcanvas.getInstance(sidebar)
     if (!instance) {
         instance = new bootstrap.Offcanvas(sidebar)
     }
     instance.hide()
 }
 
+
+async function saveToVault() {
+    const sessionId = localStorage.getItem('sessionId')
+    if (!sessionId) {
+        return
+    }
+
+    let objPayload = {}
+    let strEndpoint = ''
+
+    const description = quill.root.innerHTML
+
+    if (currentTab === 'jobs') {
+        strEndpoint = '/api/jobs'
+        objPayload = {
+            company: document.getElementById('jobCompany').value.trim(),
+            role: document.getElementById('jobRole').value.trim(),
+            location: document.getElementById('jobLocation').value.trim(),
+            job_date: document.getElementById('jobDate').value.trim(),
+            description: description
+        }
+    } else if (currentTab === 'education') {
+        strEndpoint = '/api/education'
+        objPayload = {
+            school_name: document.getElementById('eduSchool').value.trim(),
+            degree: document.getElementById('eduDegree').value.trim(),
+            gpa: document.getElementById('eduGpa').value.trim(),
+            end_date: document.getElementById('eduDate').value.trim(),
+            description: description
+        }
+    } else if (currentTab === 'projects') {
+        strEndpoint = '/api/projects'
+        objPayload = {
+            title: document.getElementById('projTitle').value.trim(),
+            link: document.getElementById('projLink').value.trim(),
+            tech_stack: document.getElementById('projStack').value.trim(),
+            description: description
+        }
+    } else if (currentTab === 'profile') {
+        strEndpoint = '/api/profile'
+        objPayload = {
+            full_name: document.getElementById('profFullName').value.trim(),
+            phone: document.getElementById('profPhone').value.trim(),
+            linkedin_url: document.getElementById('profLinkedIn').value.trim(),
+            github_url: document.getElementById('profGitHub').value.trim(),
+            skills: document.getElementById('profSkills').value.trim(),
+            description: description
+        }
+    }
+
+    try {
+        const response = await fetch(strEndpoint, {
+            // profile is the only one that updates rather than creates new entry
+            method: (currentTab === 'profile') ? 'PUT' : 'POST',
+            headers: {'Content-Type': 'application/json', 'x-session-id': sessionId},
+            body: JSON.stringify(objPayload)
+        })
+
+        if (response.ok) {
+            alert(`${currentTab} saved successfully`)
+            // clear input fields automatically (except for profile)
+            // in case user wants to add multiple entries back to back (likely scenario)
+            if (currentTab !== 'profile') {
+                quill.setContents([])
+                document.querySelectorAll('#divDynamicFormFields input').forEach(input => input.value = '')
+            }
+        } else {
+            const errorData = await response.json()
+            alert(`Error saving: ${errorData.error}`)
+        }
+    } catch (err) {
+        console.error("Vault save failed: ", err)
+    }
+}
 
 // --- CLEAR AUTH FIELDS ---
 function clearAuthFields() {
