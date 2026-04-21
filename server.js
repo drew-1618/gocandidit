@@ -131,7 +131,7 @@ app.delete('/api/logout', authorize, (req, res) => {
 
 // --- JOBS ROUTES ---
 app.post('/api/jobs', authorize, (req, res) => {
-    const {company, role, description, job_date} = req.body
+    const {company, location, role, description, job_date} = req.body
     const userId = req.userId
     const jobId = uuidv4()
 
@@ -164,12 +164,12 @@ app.get('/api/jobs/', authorize, (req, res) => {
 
 // --- EDUCATION ROUTES ---
 app.post('/api/education', authorize, (req, res) => {
-    const {school_name, degree, major, minor, gpa, location, start_date, end_date} = req.body
+    const {school_name, degree, major, minor, gpa, location, start_date, end_date, description} = req.body
     const userId = req.userId
     const eduId = uuidv4()
 
-    const strQuery = "INSERT INTO tblEducation (id, user_id, school_name, degree, major, minor, gpa, location, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    db.run(strQuery, [eduId, userId, school_name, degree, major, minor, gpa, location, start_date, end_date], function(err) {
+    const strQuery = "INSERT INTO tblEducation (id, user_id, school_name, degree, major, minor, gpa, location, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    db.run(strQuery, [eduId, userId, school_name, degree, major, minor, gpa, location, start_date, end_date, description], function(err) {
         if (err) {
             res.status(500).json({error: err.message})
         } else {
