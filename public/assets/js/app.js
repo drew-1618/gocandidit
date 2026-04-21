@@ -93,10 +93,11 @@ function switchTab(tab) {
         editorLabel.innerText = "Details & Achievements"
         formContainer.innerHTML = `
             <div class="row g-3">
-                <div class="col-md-6"><label class="form-label">School</label><input type="text" id="eduSchool" class="form-control" placeholder="University Name"></div>
-                <div class="col-md-6"><label class="form-label">Location</label><input type="text" id="eduLocation" class="form-control" placeholder="City, State"></div>
-                <div class="col-md-6"><label class="form-label">Degree Type</label>
+                <div class="col-md-6"><label class="form-label">School <span class="text-danger">*</span></label><input type="text" id="eduSchool" class="form-control" placeholder="University Name"><div class="invalid-feedback">Please enter the university name.</div></div>
+                <div class="col-md-6"><label class="form-label">Location <span class="text-danger">*</span></label><input type="text" id="eduLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the university location.</div></div>
+                <div class="col-md-6"><label class="form-label">Degree Type <span class="text-danger">*</span></label>
                     <select id="eduDegree" class="form-select">
+                        <option value="" selected disabled hidden>-- Select --</option>
                         <option value="B.S.">Bachelor of Science (B.S.)</option>
                         <option value="B.A.">Bachelor of Arts (B.A.)</option>
                         <option value="A.S.">Associate of Science (A.S.)</option>
@@ -105,12 +106,13 @@ function switchTab(tab) {
                         <option value="Ph.D.">Doctorate (Ph.D.)</option>
                         <option value="Other">Other</option>
                     </select>
+                    <div class="invalid-feedback">Please enter the degree type.</div>
                 </div>
-                <div class="col-md-6"><label class="form-label">Major</label><input type="text" id="eduMajor" class="form-control" placeholder="e.g. Computer Science"></div>
+                <div class="col-md-6"><label class="form-label">Major <span class="text-danger">*</span></label><input type="text" id="eduMajor" class="form-control" placeholder="e.g. Computer Science"><div class="invalid-feedback">Please enter the major.</div></div>
                 <div class="col-md-6"><label class="form-label">Minor</label><input type="text" id="eduMinor" class="form-control" placeholder="e.g. Mathematics"></div>
+                <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="text" id="eduStartDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the start date.</div></div>
+                <div class="col-md-6"><label class="form-label">End Date (or Expected) <span class="text-danger">*</span></label><input type="text" id="eduEndDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the end date / expected graduation.</div></div>
                 <div class="col-md-6"><label class="form-label">GPA</label><input type="text" id="eduGpa" class="form-control" placeholder="0.00"></div>
-                <div class="col-md-6"><label class="form-label">Start Date</label><input type="text" id="eduStartDate" class="form-control" placeholder="Month Year"></div>
-                <div class="col-md-6"><label class="form-label">End Date (or Expected)</label><input type="text" id="eduEndDate" class="form-control" placeholder="Month Year"></div>
             </div>`
     } else if (tab === 'projects') {
         title.innerText = "Technical Projects"
@@ -141,6 +143,7 @@ async function saveToVault() {
 
     let objPayload = {}
     let strEndpoint = ''
+    let arrRequiredFields = []
 
     const description = quill.root.innerHTML
 
@@ -155,6 +158,7 @@ async function saveToVault() {
         }
     } else if (currentTab === 'education') {
         strEndpoint = '/api/education'
+        arrRequiredFields = ['eduSchool', 'eduLocation', 'eduDegree', 'eduMajor', 'eduStartDate', 'eduEndDate']
         objPayload = {
             school_name: document.getElementById('eduSchool').value.trim(),
             location: document.getElementById('eduLocation').value.trim(),
@@ -184,6 +188,23 @@ async function saveToVault() {
             skills: document.getElementById('profSkills').value.trim(),
             description: description
         }
+    }
+
+    // clear previous errors so the user can fill them in
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'))
+
+    let arrMissingFields = []
+    arrRequiredFields.forEach(id => {
+        const input = document.getElementById(id)
+        if (input && input.value.trim() == "") {
+            input.classList.add('is-invalid')
+            arrMissingFields.push(id)
+        }
+    })
+
+    if (arrMissingFields.length > 0) {
+        alert("Please fill in all required fields (*)")
+        return
     }
 
     try {
@@ -294,6 +315,13 @@ async function logout() {
     clearAuthFields()
     updateUI()
 }
+
+// remove red highlight as soon as the user starts typing/selecting
+document.getElementById('divDynamicFormFields').addEventListener('input', (event) => {
+    if (event.target.classList.contains('is-invalid')) {
+        event.target.classList.remove('is-invalid')
+    }
+})
 
 // Initialize the view on page load
 window.onload = updateUI
