@@ -72,8 +72,8 @@ function switchTab(tab) {
         editorLabel.innerText = "Professional Summary / Bio"
         formContainer.innerHTML = `
             <div class="row g-3">
-                <div class="col-md-12"><label class="form-label">Full Name</label><input type="text" id="profFullName" class="form-control" placeholder="First Last"></div>
-                <div class="col-md-6"><label class="form-label">Phone Number</label><input type="tel" id="profPhone" class="form-control" placeholder="(000) 000-0000"></div>
+                <div class="col-md-12"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" id="profFullName" class="form-control" placeholder="First Last"><div class="invalid-feedback">Please enter your full name.</div></div>
+                <div class="col-md-6"><label class="form-label">Phone Number <span class="text-danger">*</span></label><input type="tel" id="profPhone" class="form-control" placeholder="(000) 000-0000"><div class="invalid-feedback">Please enter your phone number.</div></div>
                 <div class="col-md-6"><label class="form-label">LinkedIn URL</label><input type="url" id="profLinkedIn" class="form-control" placeholder="https://linkedin.com/in/..."></div>
                 <div class="col-md-6"><label class="form-label">GitHub URL</label><input type="url" id="profGitHub" class="form-control" placeholder="https://github.com/..."></div>
                 <div class="col-md-6"><label class="form-label">Professional Skills</label><input type="text" id="profSkills" class="form-control" placeholder="Python, Node.js, C++"></div>
@@ -185,13 +185,14 @@ async function saveToVault() {
         }
     } else if (currentTab === 'profile') {
         strEndpoint = '/api/profile'
+        arrRequiredFields = ['profFullName', 'profPhone']
         objPayload = {
             full_name: document.getElementById('profFullName').value.trim(),
             phone: document.getElementById('profPhone').value.trim(),
             linkedin_url: document.getElementById('profLinkedIn').value.trim(),
             github_url: document.getElementById('profGitHub').value.trim(),
             skills: document.getElementById('profSkills').value.trim(),
-            description: description
+            summary: description
         }
     }
 

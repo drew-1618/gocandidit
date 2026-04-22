@@ -222,7 +222,7 @@ app.get('/api/projects/', authorize, (req, res) => {
 
 
 //  --- EXTRA USER PROFILE FIELDS ROUTE ---
-app.put('/api/users/profile', authorize, (req, res) => {
+app.put('/api/profile', authorize, (req, res) => {
     const userId = req.userId
     const {full_name, skills, phone, linkedin_url, github_url, summary} = req.body
 
