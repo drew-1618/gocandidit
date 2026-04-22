@@ -38,6 +38,56 @@ function goHome() {
     currentTab = 'welcome'
 }
 
+async function fetchVaultData(strCategory, strContainerId) {
+    const sessionId = localStorage.getItem('sessionId')
+    const container = document.getElementById(strContainerId)
+
+    try {
+        const response = await fetch(`/api/${strCategory}`, {
+            headers: {'x-session-id': sessionId}
+        })
+        const data = await response.json()
+
+        if (data.length === 0) {
+            container.innerHTML = `<p class="text-muted italic"/>No records found in your vault for this category.</p>`
+            return
+        }
+
+        // build list of cards
+        let html = '<div class="list-group">'
+        data.forEach(item => {
+            if (strCategory === 'jobs') {
+                html += `
+                    <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1 text-primary me-6">${item.role}</h5>
+                            <small class="text-muted">${item.start_date} - ${item.end_date}</small>
+                        </div>
+                        <p class="mb-1 fw-bold">${item.company} | <span class="fw-normal text-muted">${item.location}</span></p>
+                        <div class="small text-secondary mt-2">${item.description || ''}</div>
+                    </div>
+                `
+            } else if (strCategory === 'education') {
+                html += `
+                    <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1 text-success">${item.degree} in ${item.major}</h5>
+                            <small class="text-muted">${item.end_date}</small>
+                        </div>
+                        <p class="mb-1 fw-bold">${item.school_name}</p>
+                        <div class="small text-secondary mt-2">${item.description || ''}</div>
+                    </div>
+                `
+            }
+        })
+        html += '</div>'
+        container.innerHTML = html
+    } catch (err) {
+        console.err(`Failed to fetch ${strCategory}: `, err)
+        container.innerHTML = `<p class="text-danger">Error loading vault data.</p>`
+    }
+}
+
 
 let currentTab = 'jobs'
 function switchTab(tab) {
@@ -101,17 +151,23 @@ function switchTab(tab) {
         title.innerText = "Work Experience"
         editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
+            <div id="vault-list-jobs" class="mb-4"></div> <hr>
+            <h5 class="mb-3">Add New Experience</h5>
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">Company <span class="text-danger">*</span></label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"><div class="invalid-feedback">Please enter the company name.</div></div>
                 <div class="col-md-6"><label class="form-label">Location <span class="text-danger">*</span></label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the company location.</div></div>
                 <div class="col-md-6"><label class="form-label">Role <span class="text-danger">*</span></label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"><div class="invalid-feedback">Please enter the job title.</div></div>
                 <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="text" id="jobStartDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the start date.</div></div>
                 <div class="col-md-6"><label class="form-label">End Date (or Present) <span class="text-danger">*</span></label><input type="text" id="jobEndDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the end date or Present.</div></div>
-                </div>`
+            </div>`
+        // fetch and render
+        fetchVaultData('jobs', 'vault-list-jobs') 
     } else if (tab === 'education') {
         title.innerText = "Education History"
         editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
+            <div id="vault-list-education" class="mb-4"></div> <hr>
+            <h5 class="mb-3">Add New Education</h5>
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">School <span class="text-danger">*</span></label><input type="text" id="eduSchool" class="form-control" placeholder="University Name"><div class="invalid-feedback">Please enter the university name.</div></div>
                 <div class="col-md-6"><label class="form-label">Location <span class="text-danger">*</span></label><input type="text" id="eduLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the university location.</div></div>
@@ -134,6 +190,8 @@ function switchTab(tab) {
                 <div class="col-md-6"><label class="form-label">End Date (or Expected) <span class="text-danger">*</span></label><input type="text" id="eduEndDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the end date / expected graduation.</div></div>
                 <div class="col-md-6"><label class="form-label">GPA</label><input type="text" id="eduGpa" class="form-control" placeholder="0.00"></div>
             </div>`
+        // fetch and render
+        fetchVaultData('education', 'vault-list-education') 
     } else if (tab === 'projects') {
         title.innerText = "Technical Projects"
         editorLabel.innerText = "Additional Details & Achievements"
@@ -247,6 +305,12 @@ async function saveToVault() {
             if (currentTab !== 'profile') {
                 quill.setContents([])
                 document.querySelectorAll('#divDynamicFormFields input').forEach(input => input.value = '')
+
+                // refresh list
+                const containerId = `vault-list-${currentTab}`
+                if (document.getElementById(containerId)) {
+                    fetchVaultData(currentTab, containerId)
+                }
             }
         } else {
             const errorData = await response.json()
