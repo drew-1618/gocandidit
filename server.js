@@ -4,7 +4,7 @@ const path = require('path')
 const {v4: uuidv4} = require('uuid')
 const bcrypt = require('bcrypt')
 const sqlite3 = require('sqlite3')
-const { error } = require('console')
+const { error, table } = require('console')
 
 const app = express()
 const PORT = process.env.PORT || 8000
@@ -244,6 +244,34 @@ app.get('/api/profile', authorize, (req, res) => {
             res.status(500).json({error: err.message})
         } else {
             res.status(200).json(row || {})
+        }
+    })
+})
+
+
+app.delete('/api/:category/:id', authorize, (req,res) => {
+    const {category, id} = req.params
+    const userId = req.userId
+    // map category to correct table
+    const objTableMap = {
+        'jobs': 'tblJobs',
+        'education': 'tblEducation',
+        'projects': 'tblProjects'
+    }
+
+    const strTableName = objTableMap[category]
+    if (!strTableName) {
+        return res.status(400).json({error: "Invalid category"})
+    }
+
+    const strQuery = `delete from ${strTableName} where id = ? and user_id = ?`
+    db.run(strQuery, [id, userId], (err) => {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else if (this.changes === 0) {
+            res.status(404).json({error: "Record not found"})
+        } else {
+            res.status(200).json({message: "record deleted successfully"})
         }
     })
 })

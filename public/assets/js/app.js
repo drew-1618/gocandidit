@@ -77,7 +77,14 @@ async function fetchVaultData(strCategory, strContainerId) {
                             <small class="text-muted">${convertDateToReadable(item.start_date)} - ${convertDateToReadable(item.end_date)}</small>
                         </div>
                         <p class="mb-1 fw-bold">${item.company} | <span class="fw-normal text-muted">${item.location}</span></p>
-                        <div class="small text-secondary mt-2">${item.description || ''}</div>
+                        <div class="d-flex justify-content-between align-items-end mt-2">
+                            <div class="small text-secondary mt-2">${item.description || ''}</div>
+                            <div>
+                                <button class="btn btn-outline-danger btn-sm border-0" onclick="deleteVaultItem('jobs', '${item.id}')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `
             } else if (strCategory === 'education') {
@@ -87,8 +94,15 @@ async function fetchVaultData(strCategory, strContainerId) {
                             <h5 class="mb-1 text-success">${item.degree} in ${item.major}</h5>
                             <small class="text-muted">${convertDateToReadable(item.end_date)}</small>
                         </div>
-                        <p class="mb-1 fw-bold">${item.school_name}</p>
-                        <div class="small text-secondary mt-2">${item.description || ''}</div>
+                        <p class="mb-1 fw-bold">${item.school_name} | <span class="fw-normal text-muted">${item.location}</span></p></p>
+                        <div class="d-flex justify-content-between align-items-end mt-2">
+                            <div class="small text-secondary mt-2">${item.description || ''}</div>
+                            <div>
+                                <button class="btn btn-outline-danger btn-sm border-0" onclick="deleteVaultItem('education', '${item.id}')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `
             } else if (strCategory === 'projects') {
@@ -103,7 +117,12 @@ async function fetchVaultData(strCategory, strContainerId) {
                         <p class="mb-1 fw-bold">Tech Stack: ${item.tech_stack}</p>
                         <div class="d-flex justify-content-between align-items-end mt-2">
                             <div class="small text-secondary mt-2">${item.description || ''}</div>
-                            <div>${strLinkHtml}</div>
+                            <div class="d-flex gap-2 align-items-center">
+                                ${strLinkHtml}
+                                <button class="btn btn-outline-danger btn-sm border-0" onclick="deleteVaultItem('projects', '${item.id}')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `
@@ -114,6 +133,28 @@ async function fetchVaultData(strCategory, strContainerId) {
     } catch (err) {
         console.error(`Failed to fetch ${strCategory}: `, err)
         container.innerHTML = `<p class="text-danger">Error loading vault data.</p>`
+    }
+}
+
+async function deleteVaultItem(category, id) {
+    if (!confirm("Are you sure you want to delete this item? This action cannot be undone.")) return
+
+    const sessionId = localStorage.getItem('sessionId')
+    try {
+        const response = await fetch(`/api/${category}/${id}`, {
+            method: 'DELETE',
+            headers: {'x-session-id': sessionId}
+        })
+
+        if (response.ok) {
+            const strContainerId = `vault-list-${category}`
+            fetchVaultData(category, strContainerId)
+        } else {
+            const data = await response.json()
+            alert("Error: " + data.error)
+        }
+    } catch (err) {
+        console.error("Delete failed: ", err)
     }
 }
 
