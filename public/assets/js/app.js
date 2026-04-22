@@ -74,7 +74,7 @@ async function fetchVaultData(strCategory, strContainerId) {
                     <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1 text-primary me-6">${item.role}</h5>
-                            <small class="text-muted">${item.start_date} - ${item.end_date}</small>
+                            <small class="text-muted">${convertDateToReadable(item.start_date)} - ${convertDateToReadable(item.end_date)}</small>
                         </div>
                         <p class="mb-1 fw-bold">${item.company} | <span class="fw-normal text-muted">${item.location}</span></p>
                         <div class="small text-secondary mt-2">${item.description || ''}</div>
@@ -85,7 +85,7 @@ async function fetchVaultData(strCategory, strContainerId) {
                     <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1 text-success">${item.degree} in ${item.major}</h5>
-                            <small class="text-muted">${item.end_date}</small>
+                            <small class="text-muted">${convertDateToReadable(item.end_date)}</small>
                         </div>
                         <p class="mb-1 fw-bold">${item.school_name}</p>
                         <div class="small text-secondary mt-2">${item.description || ''}</div>
@@ -98,7 +98,7 @@ async function fetchVaultData(strCategory, strContainerId) {
                     <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1 text-success">${item.title}</h5>
-                            <small class="text-muted">${item.proj_date}</small>
+                            <small class="text-muted">${convertDateToReadable(item.proj_date)}</small>
                         </div>
                         <p class="mb-1 fw-bold">Tech Stack: ${item.tech_stack}</p>
                         <div class="d-flex justify-content-between align-items-end mt-2">
@@ -247,6 +247,33 @@ function switchTab(tab) {
 }
 
 
+function convertDateToReadable(strDate) {
+    if (!strDate || strDate === "Present") {
+        return strDate
+    }
+    if (!strDate.includes('-')) {
+        return strDate
+    }
+    objMonthMap = {
+        "01": "January",
+        "02": "February",
+        "03": "March",
+        "04": "April" ,
+        "05": "May",
+        "06": "June",
+        "07": "July",
+        "08": "August",
+        "09": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+    }
+    const strYear = strDate.split('-')[0]
+    const strMonth = objMonthMap[strDate.split('-')[1]]
+    return `${strMonth} ${strYear}`
+}
+
+
 async function saveToVault() {
     const sessionId = localStorage.getItem('sessionId')
     if (!sessionId) {
@@ -261,7 +288,7 @@ async function saveToVault() {
 
     if (currentTab === 'jobs') {
         strEndpoint = '/api/jobs'
-        arrRequiredFields = ['jobCompany', 'jobLocation', 'jobRole', 'jobStartDate', 'jobEndDate']
+        arrRequiredFields = ['jobCompany', 'jobLocation', 'jobRole', 'jobStartDate']
         objPayload = {
             company: document.getElementById('jobCompany').value.trim(),
             location: document.getElementById('jobLocation').value.trim(),
