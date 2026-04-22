@@ -98,10 +98,13 @@ async function fetchVaultData(strCategory, strContainerId) {
                     <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1 text-success">${item.title}</h5>
-                            ${strLinkHtml}
+                            <small class="text-muted">${item.proj_date}</small>
                         </div>
                         <p class="mb-1 fw-bold">Tech Stack: ${item.tech_stack}</p>
-                        <div class="small text-secondary mt-2">${item.description || ''}</div>
+                        <div class="d-flex justify-content-between align-items-end mt-2">
+                            <div class="small text-secondary mt-2">${item.description || ''}</div>
+                            <div>${strLinkHtml}</div>
+                        </div>
                     </div>
                 `
             }
