@@ -78,12 +78,25 @@ async function fetchVaultData(strCategory, strContainerId) {
                         <div class="small text-secondary mt-2">${item.description || ''}</div>
                     </div>
                 `
+            } else if (strCategory === 'projects') {
+                const boolHasGitHubUrl = (item.link !== null && item.link !== "")
+                const strLinkHtml = boolHasGitHubUrl ? `<a href=${item.link}><i class="fa-brands fa-github text-primary fs-3"></i></a>` : ''
+                html += `
+                    <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1 text-success">${item.title}</h5>
+                            ${strLinkHtml}
+                        </div>
+                        <p class="mb-1 fw-bold">Tech Stack: ${item.tech_stack}</p>
+                        <div class="small text-secondary mt-2">${item.description || ''}</div>
+                    </div>
+                `
             }
         })
         html += '</div>'
         container.innerHTML = html
     } catch (err) {
-        console.err(`Failed to fetch ${strCategory}: `, err)
+        console.error(`Failed to fetch ${strCategory}: `, err)
         container.innerHTML = `<p class="text-danger">Error loading vault data.</p>`
     }
 }
@@ -118,7 +131,7 @@ function switchTab(tab) {
     quill.setContents([])
 
     if (tab === 'profile') {
-        title.innerText = "Personal Information"
+        title.innerText = "Update Personal Information"
         editorLabel.innerText = "Professional Summary / Bio"
         formContainer.innerHTML = `
             <div class="row g-3">
@@ -196,11 +209,15 @@ function switchTab(tab) {
         title.innerText = "Technical Projects"
         editorLabel.innerText = "Additional Details & Achievements"
         formContainer.innerHTML = `
+            <div id="vault-list-projects" class="mb-4"></div> <hr>
+            <h5 class="mb-3">Add New Project</h5>
             <div class="row g-3">
                 <div class="col-md-12"><label class="form-label">Project Title <span class="text-danger">*</span></label><input type="text" id="projTitle" class="form-control" placeholder="Project Name"><div class="invalid-feedback">Please enter the project title.</div></div>
                 <div class="col-md-6"><label class="form-label">Tech Stack <span class="text-danger">*</span></label><input type="text" id="projStack" class="form-control" placeholder="e.g., Node.js, ChartJS, SQLite"><div class="invalid-feedback">Please enter the tech stack.</div></div>
                 <div class="col-md-6"><label class="form-label">GitHub/Demo Link</label><input type="text" id="projLink" class="form-control" placeholder="https://github.com/..."></div>
             </div>`
+        // fetch and render
+        fetchVaultData('projects', 'vault-list-projects') 
     }
 
     // auto close sidebar on mobile
