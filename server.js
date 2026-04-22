@@ -193,12 +193,12 @@ app.get('/api/education/', authorize, (req, res) => {
 
 // --- PROJECT ROUTES ---
 app.post('/api/projects', authorize, (req, res) => {
-    const {title, description, tech_stack, link} = req.body
+    const {title, description, tech_stack, link, proj_date} = req.body
     const userId = req.userId
     const projectId = uuidv4()
 
-    const strQuery = "INSERT INTO tblProjects (id, user_id, title, description, tech_stack, link) VALUES (?, ?, ?, ?, ?, ?)"
-    db.run(strQuery, [projectId, userId, title, description, tech_stack, link], (err) => {
+    const strQuery = "INSERT INTO tblProjects (id, user_id, title, description, tech_stack, link, proj_date) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    db.run(strQuery, [projectId, userId, title, description, tech_stack, link, proj_date], (err) => {
         if (err) {
             res.status(500).json({error: err.message})
         } else {

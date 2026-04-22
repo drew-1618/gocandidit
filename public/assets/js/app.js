@@ -38,6 +38,19 @@ function goHome() {
     currentTab = 'welcome'
 }
 
+function togglePresent(checkbox, dateInputId) {
+    const dateInput = document.getElementById(dateInputId);
+    if (checkbox.checked) {
+        // clear the date
+        dateInput.value = ""
+        dateInput.disabled = true
+        // clear errors if it was required
+        dateInput.classList.remove('is-invalid') 
+    } else {
+        dateInput.disabled = false
+    }
+}
+
 async function fetchVaultData(strCategory, strContainerId) {
     const sessionId = localStorage.getItem('sessionId')
     const container = document.getElementById(strContainerId)
@@ -170,8 +183,8 @@ function switchTab(tab) {
                 <div class="col-md-6"><label class="form-label">Company <span class="text-danger">*</span></label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"><div class="invalid-feedback">Please enter the company name.</div></div>
                 <div class="col-md-6"><label class="form-label">Location <span class="text-danger">*</span></label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the company location.</div></div>
                 <div class="col-md-6"><label class="form-label">Role <span class="text-danger">*</span></label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"><div class="invalid-feedback">Please enter the job title.</div></div>
-                <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="text" id="jobStartDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the start date.</div></div>
-                <div class="col-md-6"><label class="form-label">End Date (or Present) <span class="text-danger">*</span></label><input type="text" id="jobEndDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the end date or Present.</div></div>
+                <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="month" id="jobStartDate" class="form-control"><div class="invalid-feedback">Please enter the start date.</div></div>
+                <div class="col-md-6"><label class="form-label">End Date (or Present) <span class="text-danger">*</span></label><input type="month" id="jobEndDate" class="form-control"><div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="chkJobPresent" onchange="togglePresent(this, 'jobEndDate')"><label class="form-check-label" for="chkJobPresent">I currently work here</label></div><div class="invalid-feedback">Please enter the end date or Present.</div></div>
             </div>`
         // fetch and render
         fetchVaultData('jobs', 'vault-list-jobs') 
@@ -199,8 +212,8 @@ function switchTab(tab) {
                 </div>
                 <div class="col-md-6"><label class="form-label">Major <span class="text-danger">*</span></label><input type="text" id="eduMajor" class="form-control" placeholder="e.g. Computer Science"><div class="invalid-feedback">Please enter the major.</div></div>
                 <div class="col-md-6"><label class="form-label">Minor</label><input type="text" id="eduMinor" class="form-control" placeholder="e.g. Mathematics"></div>
-                <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="text" id="eduStartDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the start date.</div></div>
-                <div class="col-md-6"><label class="form-label">End Date (or Expected) <span class="text-danger">*</span></label><input type="text" id="eduEndDate" class="form-control" placeholder="Month Year"><div class="invalid-feedback">Please enter the end date / expected graduation.</div></div>
+                <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="month" id="eduStartDate" class="form-control"><div class="invalid-feedback">Please enter the start date.</div></div>
+                <div class="col-md-6"><label class="form-label">End Date (or Expected) <span class="text-danger">*</span></label><input type="month" id="eduEndDate" class="form-control"><div class="invalid-feedback">Please enter the end date / expected graduation.</div></div>
                 <div class="col-md-6"><label class="form-label">GPA</label><input type="text" id="eduGpa" class="form-control" placeholder="0.00"></div>
             </div>`
         // fetch and render
@@ -215,6 +228,7 @@ function switchTab(tab) {
                 <div class="col-md-12"><label class="form-label">Project Title <span class="text-danger">*</span></label><input type="text" id="projTitle" class="form-control" placeholder="Project Name"><div class="invalid-feedback">Please enter the project title.</div></div>
                 <div class="col-md-6"><label class="form-label">Tech Stack <span class="text-danger">*</span></label><input type="text" id="projStack" class="form-control" placeholder="e.g., Node.js, ChartJS, SQLite"><div class="invalid-feedback">Please enter the tech stack.</div></div>
                 <div class="col-md-6"><label class="form-label">GitHub/Demo Link</label><input type="text" id="projLink" class="form-control" placeholder="https://github.com/..."></div>
+                <div class="col-md-6"><label class="form-label">Completion <span class="text-danger">*</span></label><input type="month" id="projCompletionDate" class="form-control"><div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="chkProjectPresent" onchange="togglePresent(this, 'projCompletionDate')"><label class="form-check-label" for="chkProjectPresent">This project is in progress</label></div><div class="invalid-feedback">Please enter the completion date.</div></div>
             </div>`
         // fetch and render
         fetchVaultData('projects', 'vault-list-projects') 
@@ -250,8 +264,8 @@ async function saveToVault() {
             location: document.getElementById('jobLocation').value.trim(),
             role: document.getElementById('jobRole').value.trim(),
             location: document.getElementById('jobLocation').value.trim(),
-            start_date: document.getElementById('jobStartDate').value.trim(),
-            end_date: document.getElementById('jobEndDate').value.trim(),
+            start_date: document.getElementById('jobStartDate').value,
+            end_date: document.getElementById('jobEndDate').value == "" ? "Present" : document.getElementById('jobEndDate').value,
             description: description
         }
     } else if (currentTab === 'education') {
@@ -264,8 +278,8 @@ async function saveToVault() {
             major: document.getElementById('eduMajor').value.trim(),
             minor: document.getElementById('eduMinor').value.trim(),
             gpa: document.getElementById('eduGpa').value.trim(),
-            start_date: document.getElementById('eduStartDate').value.trim(),
-            end_date: document.getElementById('eduEndDate').value.trim(),
+            start_date: document.getElementById('eduStartDate').value,
+            end_date: document.getElementById('eduEndDate').value == "" ? "Present" : document.getElementById('eduEndDate').value,
             description: description
         }
     } else if (currentTab === 'projects') {
@@ -275,6 +289,7 @@ async function saveToVault() {
             title: document.getElementById('projTitle').value.trim(),
             link: document.getElementById('projLink').value.trim(),
             tech_stack: document.getElementById('projStack').value.trim(),
+            proj_date: document.getElementById('projCompletionDate').value == "" ? "Present" : document.getElementById('projCompletionDate').value,
             description: description
         }
     } else if (currentTab === 'profile') {

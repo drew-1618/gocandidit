@@ -13,3 +13,4 @@ Gemini to help speed up logging in and registration for single page application
 Gemini to help with sidebar navigation
 Gemini help with auto filling personal information from database.
 Gemini help with building list of cards from vault
+Gemini to help with marking end dates to present.
