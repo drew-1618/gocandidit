@@ -78,6 +78,25 @@ function switchTab(tab) {
                 <div class="col-md-6"><label class="form-label">GitHub URL</label><input type="url" id="profGitHub" class="form-control" placeholder="https://github.com/..."></div>
                 <div class="col-md-6"><label class="form-label">Professional Skills</label><input type="text" id="profSkills" class="form-control" placeholder="Python, Node.js, C++"></div>
             </div>`
+
+            // get data currently in db for user and auto fill
+            fetch('/api/profile', {
+                headers: {'x-session-id': localStorage.getItem('sessionId')}
+            })
+            .then (res => res.json())
+            .then (data => {
+                if (data) {
+                    document.getElementById('profFullName').value = data.full_name || ''
+                    document.getElementById('profPhone').value = data.phone || ''
+                    document.getElementById('profLinkedIn').value = data.linkedin_url || ''
+                    document.getElementById('profGitHub').value = data.github_url || ''
+                    document.getElementById('profSkills').value = data.skills || ''
+                    if (data.summary) {
+                        quill.root.innerHTML = data.summary
+                    }
+
+                }
+            })
     } else if (tab === 'jobs') {
         title.innerText = "Work Experience"
         editorLabel.innerText = "Additional Details & Achievements"

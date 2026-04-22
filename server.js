@@ -236,6 +236,18 @@ app.put('/api/profile', authorize, (req, res) => {
     })
 })
 
+app.get('/api/profile', authorize, (req, res) => {
+    const userId = req.userId
+    const strQuery = "SELECT * FROM tblUsers WHERE id = ?"
+    db.get(strQuery, [userId], (err, row) => {
+        if (err) {
+            res.status(500).json({error: err.message})
+        } else {
+            res.status(200).json(row || {})
+        }
+    })
+})
+
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
 })

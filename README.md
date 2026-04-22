@@ -11,3 +11,4 @@ Gemini help with authorization function in server.js and passing it in with the 
 Gemini help with clearing old sessions after connecting to database
 Gemini to help speed up logging in and registration for single page application
 Gemini to help with sidebar navigation
+Gemini help with auto filling personal information from database.
