@@ -151,7 +151,7 @@ app.post('/api/jobs', authorize, (req, res) => {
 
 app.get('/api/jobs/', authorize, (req, res) => {
     const userId = req.userId
-    const strQuery = "SELECT * FROM tblJobs WHERE user_id = ? ORDER BY created_at DESC"
+    const strQuery = "SELECT * FROM tblJobs WHERE user_id = ? ORDER BY end_date DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
             res.status(500).json({error: err.message})
@@ -209,7 +209,7 @@ app.post('/api/projects', authorize, (req, res) => {
 
 app.get('/api/projects/', authorize, (req, res) => {
     const userId = req.userId
-    const strQuery = "SELECT * FROM tblProjects WHERE user_id = ? ORDER by created_at DESC"
+    const strQuery = "SELECT * FROM tblProjects WHERE user_id = ? ORDER by proj_date DESC"
 
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
