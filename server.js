@@ -5,9 +5,13 @@ const {v4: uuidv4} = require('uuid')
 const bcrypt = require('bcrypt')
 const sqlite3 = require('sqlite3')
 const { error, table } = require('console')
+const {GoogleGenerativeAI} = require("@google/generative-ai")
 
 const app = express()
 const PORT = process.env.PORT || 8000
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const model = genAI.getGenerativeModel({model: "gemini-3-flash-preview"})
 
 app.use(express.json())
 
@@ -283,26 +287,57 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
 
     try {
         // get all data from db
-        const profile = await new Promise((res, rej) => db.get("SELECT * FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
+        // for tblUsers, don't get bycrypted passwords. AI does not need that
+        const profile = await new Promise((res, rej) => db.get("SELECT email, skills, phone, linkedin_url, summary, github_url, full_name FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
         const jobs = await new Promise((res, rej) => db.all("SELECT * FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
         const education = await new Promise((res, rej) => db.all("SELECT * FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
         const projects = await new Promise((res, rej) => db.all("SELECT * FROM tblProjects WHERE user_id = ? ORDER BY proj_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
     
-        // build context string
-        const strUserContext = `
-            NAME: ${profile.full_name}
-            SKILLS: ${profile.skills}
-            SUMMARY: ${profile.summary}
+        // build prompt with personalized data
+        const strPrompt = `
+            ROLE: Expert resume architect
+            TASK: Create a tailored HTML resume that passes ATS
+
+            STRICT RULES: 
+            1. ZERO HALLUCINATION: Use ONLY the data provided below. 
+            2. NO PLACEHOLDERS: Do not use "@email.com" or "(000) 000-0000" if the real data is present. Use the exact email and phone from the User Profile.
+            3. EXHAUSTIVE BULLETS: For Jobs and Projects, you MUST transform the 'description' field (which contains HTML) into a series of 2-5 high-impact bullet points. Do not just summarize; extract specific technical achievements.
+            4. MATCHING: Explicitly highlight ${profile.skills} that appear in the Job Description.
+            5. EXACTNESS: Links, emails,  dates, etc. Must be exactly as stated.
+
+            USER DATA:
+            Profile: ${profile}
             EXPERIENCE: ${JSON.stringify(jobs)}
             EDUCATION: ${JSON.stringify(education)}
             PROJECTS: ${JSON.stringify(projects)}
-        `
-        
-        // prompt then have response here
-        const aiResponse = "<h1>" + profile.full_name + "</h1>"
 
-        res.status(200).json({resumeHtml: aiResponse})
+            TARGET JOB DESCRIPTION:
+            ${jobDescription}
+
+            GENERAL INSTRUCTIONS: 
+            1. Use clean HTML (h1, h2, h3, p, ul, li). Do not include <html> or <body> tags.
+            2. Tailor the content: Emphasize the experience and projects that match the Job Description.
+            3. Use action verbs (e.g., "Architected," "Optimized," "Spearheaded").
+            4. If the job description asks for a skill the user has, make sure it is prominent.
+            5. Use full professional names
+
+            OUTPT FORMAT:
+            Output should be approximately one page's worth length when printed
+            Format the resume professionally with sections for Contact, Summary, Experience, Projects, Education, and Skills.
+            Return only the inner HTML. Use <h2> for section headers, <strong> for titles, and <ul>/<li> for details.
+        `
+
+        const result = await model.generateContent(strPrompt)
+        const response = await result.response
+        const text = response.text()
+
+        // cleanup response (markdown code blocks that AI typically inserts
+        const cleanHtml = text.replace(/```html|```/g, "")
+
+        res.status(200).json({resumeHtml: cleanHtml})
+        
     } catch (err) {
+        console.error("AI API Error: ", err);
         res.status(500).json({error: "Failed to gather vault data: " + err.message})
     }
 })

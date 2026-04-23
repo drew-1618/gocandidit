@@ -329,7 +329,7 @@ function switchTab(tab) {
             </div>
             <div id="ai-loading" class="d-none text-center my-3">
                 <div class="spinner-border text-primary" role="status"></div>
-                <p>Gemini is crafting your resume...</p>
+                <p>AI is tailoring your resume...</p>
             </div>
         `
         editorLabel.innerText = "AI-Generated Draft (Review & Edit)"
