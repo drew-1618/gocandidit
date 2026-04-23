@@ -38,6 +38,46 @@ function goHome() {
     currentTab = 'welcome'
 }
 
+async function generateResume() {
+    const strJobDesc = document.getElementById('jobTargetDesc').value.trim()
+    const divLoading = document.getElementById('ai-loading')
+    const sessionId = localStorage.getItem('sessionId')
+
+    if (!strJobDesc) {
+        alert("Please paste a job description first so the resume can be tailored for the job you want.")
+        return
+    }
+
+    // show loading state
+    divLoading.classList.remove('d-none')
+    // remove previous draft
+    quill.setContents([])
+
+    try {
+        const response = await fetch('/api/generate-resume', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({jobDescription: strJobDesc})
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+            quill.root.innerHTML = data.resumeHtml
+        } else {
+            alert("Generation failed: " + data.error)
+        }
+    } catch (err) {
+        console.error("AI Generation Error: ", err)
+    } finally {
+        // always remove the loading div
+        divLoading.classList.add('d-none')
+    }
+}
+
 function togglePresent(checkbox, dateInputId) {
     const dateInput = document.getElementById(dateInputId);
     if (checkbox.checked) {

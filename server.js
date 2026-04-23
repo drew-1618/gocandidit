@@ -276,6 +276,37 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
     })
 })
 
+
+app.post('/api/generate-resume', authorize, async (req, res) => {
+    const userId = req.userId
+    const {jobDescription} = req.body
+
+    try {
+        // get all data from db
+        const profile = await new Promise((res, rej) => db.get("SELECT * FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
+        const jobs = await new Promise((res, rej) => db.all("SELECT * FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
+        const education = await new Promise((res, rej) => db.all("SELECT * FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
+        const projects = await new Promise((res, rej) => db.all("SELECT * FROM tblProjects WHERE user_id = ? ORDER BY proj_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
+    
+        // build context string
+        const strUserContext = `
+            NAME: ${profile.full_name}
+            SKILLS: ${profile.skills}
+            SUMMARY: ${profile.summary}
+            EXPERIENCE: ${JSON.stringify(jobs)}
+            EDUCATION: ${JSON.stringify(education)}
+            PROJECTS: ${JSON.stringify(projects)}
+        `
+        
+        // prompt then have response here
+        const aiResponse = "<h1>" + profile.full_name + "</h1>"
+
+        res.status(200).json({resumeHtml: aiResponse})
+    } catch (err) {
+        res.status(500).json({error: "Failed to gather vault data: " + err.message})
+    }
+})
+
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
 })

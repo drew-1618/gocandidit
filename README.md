@@ -15,3 +15,4 @@ Gemini help with auto filling personal information from database.
 Gemini help with building list of cards from vault
 Gemini to help with marking end dates to present.
 Gemini help to speed up and write delete route and implementation.
+Gemini help with endpoint to generate resume.
