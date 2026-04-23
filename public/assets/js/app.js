@@ -332,9 +332,18 @@ function switchTab(tab) {
                 <p>AI is tailoring your resume...</p>
             </div>
         `
+
+        document.getElementById('divEditorActions').innerHTML = `
+            <div class="mb-3">
+                    <label class="form-label fw-bold">Name this Resume</label>
+                    <input type="text" id="saveJobTitle" class="form-control" placeholder="Save as...">
+                    <small class="text-muted">This is how it will appear in your vault.</small>
+            </div>
+        `
         editorLabel.innerText = "AI-Generated Draft (Review & Edit)"
         // start with blank slate
         quill.setContents([])
+        
     }
 
     // auto close sidebar on mobile
@@ -432,7 +441,22 @@ async function saveToVault() {
             github_url: document.getElementById('profGitHub').value.trim(),
             skills: document.getElementById('profSkills').value.trim(),
             summary: description
-        }
+        } 
+    } else if (currentTab === 'generate') {
+            const strJobTitle = document.getElementById('saveJobTitle').value.trim()
+            const strJobDesc = document.getElementById('jobTargetDesc').value.trim()
+
+            if (!strJobTitle) {
+                alert("Please give this resume a name before saving")
+                return
+            }
+
+            strEndpoint = '/api/resumes'
+            objPayload = {
+                jobTitle: strJobTitle,
+                jobDescription: strJobDesc,
+                resumeHtml: description
+            }
     }
 
     // clear previous errors so the user can fill them in

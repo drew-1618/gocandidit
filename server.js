@@ -342,6 +342,20 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
     }
 })
 
+app.post('/api/resumes', authorize, (req, res) => {
+    const {jobTitle, jobDescription, resumeHtml} = req.body
+    const userId = req.userId
+    const resumeId = uuidv4()
+
+    const strQuery = "INSERT INTO tblResumes (id, user_id, job_title, job_description, resume_html) VALUES (?, ?, ?, ?, ?)"
+    db.run(strQuery, [resumeId, userId, jobTitle, jobDescription, resumeHtml], (err) => {
+        if (err) {
+            return res.status(500).json({error: err.message})
+        }
+        res.status(200).json({message: "Resume saved to history", id: resumeId})
+    })
+})
+
 app.listen(PORT, () => {
     console.log(`GoCandidIt is live at http://localhost:${PORT}`)
 })
