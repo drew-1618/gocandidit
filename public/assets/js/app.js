@@ -276,6 +276,25 @@ function switchTab(tab) {
             </div>`
         // fetch and render
         fetchVaultData('projects', 'vault-list-projects') 
+    } else if (tab === 'generate') {
+        title.innerText = "Tailor a New Resume"
+        formContainer.innerHTML = `
+            <div class="card p-3 mb-4 border-primary">
+                <h5>Enter Target Job Details</h5>
+                <p class="small text-muted">Paste the job description you are applying for below.</p>
+                <textarea id="jobTargetDesc" class="form-control mb-3" rows="5" placeholder="Paste job description here..."></textarea>
+                <button class="btn btn-primary w-100" onclick="generateResume()">
+                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generate Tailored Resume
+                </button>
+            </div>
+            <div id="ai-loading" class="d-none text-center my-3">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p>Gemini is crafting your resume...</p>
+            </div>
+        `
+        editorLabel.innerText = "AI-Generated Draft (Review & Edit)"
+        // start with blank slate
+        quill.setContents([])
     }
 
     // auto close sidebar on mobile
