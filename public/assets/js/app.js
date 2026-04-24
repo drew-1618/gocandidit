@@ -198,7 +198,7 @@ async function deleteVaultItem(category, id) {
     }
 }
 
-
+let arrExistingResumeNames = []
 let currentTab = 'jobs'
 function switchTab(tab) {
     // prevent access if not logged in
@@ -343,7 +343,22 @@ function switchTab(tab) {
         editorLabel.innerText = "AI-Generated Draft (Review & Edit)"
         // start with blank slate
         quill.setContents([])
-        
+
+        // get all resume names
+        arrExistingResumeNames = []
+        // convert to lower case for consistency
+        fetch('/api/resumes', {headers: {'x-session-id': sessionId}})
+        .then(res => res.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+            arrExistingResumeNames = data.map(resume => {
+                const title = resume.job_title
+                return title ? title.toLowerCase() : ""
+
+            })
+
+            }
+        })
     }
 
     // auto close sidebar on mobile
@@ -402,7 +417,6 @@ async function saveToVault() {
             company: document.getElementById('jobCompany').value.trim(),
             location: document.getElementById('jobLocation').value.trim(),
             role: document.getElementById('jobRole').value.trim(),
-            location: document.getElementById('jobLocation').value.trim(),
             start_date: document.getElementById('jobStartDate').value,
             end_date: document.getElementById('jobEndDate').value == "" ? "Present" : document.getElementById('jobEndDate').value,
             description: description
@@ -470,6 +484,15 @@ async function saveToVault() {
     if (arrMissingFields.length > 0) {
         alert("Please fill in all required fields (*)")
         return
+    }
+
+    if (currentTab === 'generate') {
+        const strJobTitle = document.getElementById('saveJobTitle').value.trim().toLowerCase()
+        if (arrExistingResumeNames.includes(strJobTitle)) {
+            alert("You already have a resume with that name. Please choose a unique name.")
+            document.getElementById('saveJobTitle').classList.add('is-invalid')
+            return
+        }
     }
 
     try {

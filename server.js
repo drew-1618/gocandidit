@@ -352,7 +352,18 @@ app.post('/api/resumes', authorize, (req, res) => {
         if (err) {
             return res.status(500).json({error: err.message})
         }
-        res.status(200).json({message: "Resume saved to history", id: resumeId})
+        res.status(201).json({message: "Resume saved to history", id: resumeId})
+    })
+})
+
+app.get('/api/resumes', authorize, (req, res) => {
+    const userId = req.userId
+    const strQuery = "SELECT job_title, job_description, resume_html FROM tblResumes WHERE user_id = ?"
+    db.all(strQuery, [userId], (err, rows) => {
+        if (err) {
+            return res.status(500).json({error: err.message})
+        }
+        res.status(200).json(rows || {})
     })
 })
 
