@@ -11,7 +11,7 @@ const app = express()
 const PORT = process.env.PORT || 8000
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({model: "gemini-3-flash-preview"})
+const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"})
 
 app.use(express.json())
 
@@ -301,18 +301,18 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
             STRICT RULES: 
             1. ZERO HALLUCINATION: Use ONLY the data provided below. 
             2. NO PLACEHOLDERS: Do not use "@email.com" or "(000) 000-0000" if the real data is present. Use the exact email and phone from the User Profile.
-            3. EXHAUSTIVE BULLETS: For Jobs and Projects, you MUST transform the 'description' field (which contains HTML) into a series of 2-5 high-impact bullet points. Do not just summarize; extract specific technical achievements.
-            4. MATCHING: Explicitly highlight ${profile.skills} that appear in the Job Description.
+            3. EXHAUSTIVE BULLETS: For Jobs and Projects, you MUST transform the 'description' field (which contains HTML) into a series of 2-5 high-impact bullet points in each work experience and projects. Do not just summarize; extract specific technical achievements.
+            4. MATCHING: Explicitly highlight ${JSON.stringify(profile.skills)} that appear in the Job Description.
             5. EXACTNESS: Links, emails,  dates, etc. Must be exactly as stated.
 
             USER DATA:
-            Profile: ${profile}
+            Profile: ${JSON.stringify(profile)}
             EXPERIENCE: ${JSON.stringify(jobs)}
             EDUCATION: ${JSON.stringify(education)}
             PROJECTS: ${JSON.stringify(projects)}
 
             TARGET JOB DESCRIPTION:
-            ${jobDescription}
+            ${JSON.stringify(jobDescription)}
 
             GENERAL INSTRUCTIONS: 
             1. Use clean HTML (h1, h2, h3, p, ul, li). Do not include <html> or <body> tags.
