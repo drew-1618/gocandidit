@@ -487,6 +487,10 @@ async function saveToVault() {
             if (currentTab !== 'profile') {
                 quill.setContents([])
                 document.querySelectorAll('#divDynamicFormFields input').forEach(input => input.value = '')
+                const inputSaveTitle = document.getElementById('saveJobTitle')
+                if (inputSaveTitle) {
+                    inputSaveTitle.value = ''
+                }
 
                 // refresh list
                 const containerId = `vault-list-${currentTab}`
