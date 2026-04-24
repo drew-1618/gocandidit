@@ -335,8 +335,8 @@ function switchTab(tab) {
 
         document.getElementById('divEditorActions').innerHTML = `
             <div class="mb-3">
-                    <label class="form-label fw-bold">Name this Resume</label>
-                    <input type="text" id="saveJobTitle" class="form-control" placeholder="Save as...">
+                    <label class="form-label fw-bold">Name this Resume</label><span class="text-danger">*</span>
+                    <input type="text" id="saveJobTitle" class="form-control" placeholder="Save as..."><div class="invalid-feedback">Please enter a name for this resume.</div>
                     <small class="text-muted">This is how it will appear in your vault.</small>
             </div>
         `
@@ -443,15 +443,11 @@ async function saveToVault() {
             summary: description
         } 
     } else if (currentTab === 'generate') {
+            strEndpoint = '/api/resumes'
+            arrRequiredFields = ['saveJobTitle']
             const strJobTitle = document.getElementById('saveJobTitle').value.trim()
             const strJobDesc = document.getElementById('jobTargetDesc').value.trim()
 
-            if (!strJobTitle) {
-                alert("Please give this resume a name before saving")
-                return
-            }
-
-            strEndpoint = '/api/resumes'
             objPayload = {
                 jobTitle: strJobTitle,
                 jobDescription: strJobDesc,
@@ -592,7 +588,7 @@ async function logout() {
 }
 
 // remove red highlight as soon as the user starts typing/selecting
-document.getElementById('divDynamicFormFields').addEventListener('input', (event) => {
+document.addEventListener('input', (event) => {
     if (event.target.classList.contains('is-invalid')) {
         event.target.classList.remove('is-invalid')
     }
