@@ -3,7 +3,7 @@ const path = require('path')
 const {shell} = require('electron')
 
 // prevents multiple instance errors
-const gotTheLock = app.releaseSingleInstanceLock()
+const gotTheLock = app.requestSingleInstanceLock()
 
 if (!gotTheLock) {
     app.quit()
