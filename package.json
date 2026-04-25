@@ -23,8 +23,18 @@
   },
   "build": {
     "appId": "com.drew.gocandidit",
+    "productName": "GoCandidIt",
+    "directories": {
+      "output": "dist"
+    },
     "win": {
+      "target": "nsis",
       "icon": "public/assets/img/icon.ico"
+    }, 
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory":true,
+      "shortcutName": "GoCandidIt"
     }
   },
   "dependencies": {
