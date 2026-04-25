@@ -181,7 +181,7 @@ async function fetchVaultData(strCategory, strContainerId) {
                             <button class="btn btn-outline-primary btn-sm" onclick="previewResume('${item.id}')" title="View Resume">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <button class="btn btn-outline-danger btn-sm" onclick="deleteResume('${item.id}')" title="Delete">
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteVaultItem('resumes', '${item.id}')" title="Delete">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -389,7 +389,7 @@ function switchTab(tab) {
     } else if (currentTab === 'history') {
         title.innerText = "Resume History"
         formContainer.innerHTML = `
-            <div id="vault-list-history" class=mt-3">
+            <div id="vault-list-resumes" class=mt-3">
                 <p class="text-center text-muted">Fetching your saved resumes...</p>
             </div>
         `
@@ -404,7 +404,7 @@ function switchTab(tab) {
         }
 
         // fetch and render resume history
-        fetchVaultData('resumes', 'vault-list-history')
+        fetchVaultData('resumes', 'vault-list-resumes')
 
     }
 

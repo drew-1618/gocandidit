@@ -261,7 +261,7 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
         'jobs': 'tblJobs',
         'education': 'tblEducation',
         'projects': 'tblProjects',
-        'resumes': 'tblResumes'
+        'resumes': 'tblResumes',
     }
 
     const strTableName = objTableMap[category]
@@ -269,14 +269,14 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
         return res.status(400).json({error: "Invalid category"})
     }
 
-    const strQuery = `delete from ${strTableName} where id = ? and user_id = ?`
+    const strQuery = `DELETE FROM ${strTableName} WHERE id = ? and user_id = ?`
     db.run(strQuery, [id, userId], function(err) {
         if (err) {
             res.status(500).json({error: err.message})
         } else if (this.changes === 0) {
             res.status(404).json({error: "Record not found"})
         } else {
-            res.status(200).json({message: "record deleted successfully"})
+            res.status(200).json({message: "Record deleted successfully"})
         }
     })
 })
@@ -359,7 +359,7 @@ app.post('/api/resumes', authorize, (req, res) => {
 
 app.get('/api/resumes', authorize, (req, res) => {
     const userId = req.userId
-    const strQuery = "SELECT job_title, job_description, resume_html FROM tblResumes WHERE user_id = ?"
+    const strQuery = "SELECT id, job_title, job_description, resume_html FROM tblResumes WHERE user_id = ?"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
             return res.status(500).json({error: err.message})
