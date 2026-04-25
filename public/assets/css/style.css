@@ -1,0 +1,75 @@
+/* Written with Gemini */
+
+/* Update these rules in your style.css */
+.resume-paper {
+    background: white;
+    width: 8.5in;
+    height: 11in; /* Fix the height to standard paper */
+    padding: 0.5in 0.75in; /* Standard margins */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    color: black;
+    font-family: 'Times New Roman', serif;
+    line-height: 1.4; /* Tighter line spacing */
+    overflow: hidden; /* Ensures it doesn't bleed out in preview */
+}
+
+.resume-paper h1 {
+    font-size: 22pt; /* Name size */
+    text-align: center;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.resume-paper h2 {
+    font-size: 14pt; /* Section Header size */
+    border-bottom: 1px solid #000;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.resume-paper h3 {
+    font-size: 12pt; /* Job/Project Title size */
+    margin-top: 10px;
+    margin-bottom: 2px;
+}
+
+.resume-paper p, .resume-paper li {
+    font-size: 10.5pt; /* Standard body text size */
+    margin-bottom: 4px;
+}
+
+.resume-paper ul {
+    padding-left: 20px;
+}
+
+.resume-paper li {
+    margin-bottom: 2px; /* Slightly tighter than the standard 4px for paragraphs */
+}
+
+
+@media print {
+    /* This completely removes the buttons from the PDF/Printer output */
+    #print-preview-header {
+        display: none !important;
+    }
+
+    /* Ensure the background is white and removes the dark overlay */
+    #resume-print-preview {
+        background: white !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    /* Standardize the paper position for the PDF engine */
+    .resume-paper {
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    
+    /* Hide the rest of the UI just in case */
+    nav, .navbar, #vaultSidebar, main {
+        display: none !important;
+    }
+}

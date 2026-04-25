@@ -16,3 +16,4 @@ Gemini help with building list of cards from vault
 Gemini to help with marking end dates to present.
 Gemini help to speed up and write delete route and implementation.
 Gemini help with endpoint to generate resume.
+Gemini to write code to display resume as a printed copy and print option.

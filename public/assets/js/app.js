@@ -417,6 +417,52 @@ function switchTab(tab) {
     instance.hide()
 }
 
+// Written with Gemini
+async function previewResume(id) {
+    const sessionId = localStorage.getItem('sessionId')
+    
+    try {
+        const response = await fetch('/api/resumes', {
+            headers: { 'x-session-id': sessionId }
+        })
+        const data = await response.json()
+        const resume = data.find(r => r.id === id)
+
+        if (resume) {
+            // Create a temporary "Paper" overlay
+            const overlay = document.createElement('div')
+            overlay.id = 'resume-print-preview'
+            overlay.style = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 9999; 
+                display: flex; flex-direction: column; align-items: center; 
+                overflow-y: auto; padding: 40px;
+            `;
+
+            overlay.innerHTML = `
+                <div id="print-preview-header" class="d-flex gap-3 mb-3">
+                    <button class="btn btn-light" onclick="window.print()">
+                        <i class="fa-solid fa-print"></i> Print to PDF
+                    </button>
+                    <button class="btn btn-danger" onclick="document.getElementById('resume-print-preview').remove()">
+                        <i class="fa-solid fa-times"></i> Close
+                    </button>
+                </div>
+                <div class="resume-paper" style="
+                    background: white; width: 8.5in; min-height: 11in;
+                    padding: 0.5in; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                    color: black; font-family: 'Times New Roman', serif;
+                ">
+                    ${resume.resume_html}
+                </div>
+            `;
+            document.body.appendChild(overlay)
+        }
+    } catch (err) {
+        console.error("Preview failed:", err)
+    }
+}
+
 
 function convertDateToReadable(strDate) {
     if (!strDate || strDate === "Present") {
