@@ -4,15 +4,24 @@ const path = require('path')
 const {v4: uuidv4} = require('uuid')
 const bcrypt = require('bcrypt')
 const sqlite3 = require('sqlite3')
-const { error, table } = require('console')
+
 const {GoogleGenerativeAI} = require("@google/generative-ai")
-const {app: electronApp} = require('electron')
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"})
+
+
+// attempt electron app
+let electronApp
+try {
+    const electron = require('electron')
+    electronApp = electron.app
+} catch (err) {
+    // running it in a browser
+    electronApp = null
+}
 
 const app = express()
 const PORT = process.env.PORT || 8000
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"})
 
 app.use(express.json())
 
@@ -20,8 +29,14 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
 // connect to database
-// AppData/Roaming/gocandidit
-const dbPath = path.join(electronApp.getPath('userData'), 'database.db')
+let dbPath
+if (electronApp) {
+    // use Roaming App Data for desktop app
+    dbPath = path.join(electronApp.getPath('userData'), 'database.db')
+} else {
+    // use project root for the browser/server env
+    dbPath = path.join(__dirname, 'database.db')
+}
 
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -31,8 +46,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 })
 
+// if db is not present, create the tables needed
 db.serialize(() => {
-    // 1. Users Table
+    // Users Table
     db.run(`CREATE TABLE IF NOT EXISTS tblUsers (
         id TEXT PRIMARY KEY,
         email TEXT UNIQUE,
@@ -45,7 +61,7 @@ db.serialize(() => {
         summary TEXT
     )`);
 
-    // 2. Sessions Table
+    // Sessions Table
     db.run(`CREATE TABLE IF NOT EXISTS tblSessions (
         session_id TEXT PRIMARY KEY,
         user_id TEXT,
@@ -53,7 +69,7 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
 
-    // 3. Jobs Table
+    // Jobs Table
     db.run(`CREATE TABLE IF NOT EXISTS tblJobs (
         id TEXT PRIMARY KEY,
         user_id TEXT,
@@ -66,7 +82,7 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
 
-    // 4. Education Table
+    // Education Table
     db.run(`CREATE TABLE IF NOT EXISTS tblEducation (
         id TEXT PRIMARY KEY,
         user_id TEXT,
@@ -82,7 +98,7 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
 
-    // 5. Projects Table
+    // Projects Table
     db.run(`CREATE TABLE IF NOT EXISTS tblProjects (
         id TEXT PRIMARY KEY,
         user_id TEXT,
@@ -94,7 +110,7 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
 
-    // 6. Resumes Table
+    // Resumes Table
     db.run(`CREATE TABLE IF NOT EXISTS tblResumes (
         id TEXT PRIMARY KEY,
         user_id TEXT,
