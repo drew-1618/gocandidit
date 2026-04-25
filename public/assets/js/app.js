@@ -361,6 +361,11 @@ function switchTab(tab) {
         `
 
         document.getElementById('divEditorActions').innerHTML = `
+            <div class="d-flex gap-2 mb-3">
+                <button class="btn btn-primary" onclick="previewCurrentDraft()">
+                    <i class="fa-solid fa-eye me-2"></i>Preview Draft
+                </button>
+            </div>
             <div class="mb-3">
                     <label class="form-label fw-bold">Name this Resume</label><span class="text-danger">*</span>
                     <input type="text" id="saveJobTitle" class="form-control" placeholder="Save as..."><div class="invalid-feedback">Please enter a name for this resume.</div>
@@ -415,6 +420,41 @@ function switchTab(tab) {
         instance = new bootstrap.Offcanvas(sidebar)
     }
     instance.hide()
+}
+
+function previewCurrentDraft() {
+    const htmlContent = quill.root.innerHTML
+    
+    // don't preview if empty
+    if (quill.getText().trim().length === 0) {
+        alert("There is no resume content to preview yet. Generate or type something first!")
+        return
+    }
+
+    // use same overlay as the history preview
+    const overlay = document.createElement('div')
+    overlay.id = 'resume-print-preview'    
+    overlay.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); z-index: 9999; 
+        display: flex; flex-direction: column; align-items: center; 
+        overflow-y: auto; padding: 40px;
+    `;
+
+    overlay.innerHTML = `
+        <div id="print-preview-header" class="d-flex gap-3 mb-3">
+            <button class="btn btn-light" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Print to PDF
+            </button>
+            <button class="btn btn-danger" onclick="document.getElementById('resume-print-preview').remove()">
+                <i class="fa-solid fa-times"></i> Close Preview
+            </button>
+        </div>
+        <div class="resume-paper">
+            ${htmlContent}
+        </div>
+    `;
+    document.body.appendChild(overlay)
 }
 
 // Written with Gemini
