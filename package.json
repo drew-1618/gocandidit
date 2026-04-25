@@ -21,6 +21,12 @@
     "server": "node server.js",
     "dev": "nodemon server.js"
   },
+  "build": {
+    "appId": "com.drew.gocandidit",
+    "win": {
+      "icon": "public/assets/img/icon.ico"
+    }
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "bcrypt": "^6.0.0",
