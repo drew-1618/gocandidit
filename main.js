@@ -9,6 +9,8 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1280,
         height: 800,
+        show: false,  // start hidden
+        backgroundColor: '#f8f9fa',  // match bg-body-tertiary from bootstrap
         icon: path.join(__dirname, 'public/assets/img/icon.ico'),
         title: "GoCandidIt",
         autoHideMenuBar: true, 
@@ -16,6 +18,10 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true
         }
+    })
+
+    win.once('ready-to-show', () => {
+        win.show()
     })
 
     // open links in default browser and prevent electron from trying

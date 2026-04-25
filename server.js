@@ -4,7 +4,6 @@ const path = require('path')
 const {v4: uuidv4} = require('uuid')
 const bcrypt = require('bcrypt')
 const sqlite3 = require('sqlite3')
-const {shell} = require('electron')
 
 const {GoogleGenerativeAI} = require("@google/generative-ai")
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
