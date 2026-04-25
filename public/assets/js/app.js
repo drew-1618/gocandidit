@@ -177,11 +177,11 @@ async function fetchVaultData(strCategory, strContainerId) {
                             <h5 class="mb-1 text-success">${item.job_title}</h5>
                             <small class="text-muted">Target Description: ${item.job_description.substring(0, 60)}...</small>
                         </div>
-                        <div class="btn-group">
-                            <button class="btn btn-outline-primary btn-sm" onclick="previewResume('${item.id}')" title="View Resume">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-md border-0" onclick="previewResume('${item.id}')" title="View Resume">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <button class="btn btn-outline-danger btn-sm" onclick="deleteVaultItem('resumes', '${item.id}')" title="Delete">
+                            <button class="btn btn-outline-danger btn-md border-0" onclick="deleteVaultItem('resumes', '${item.id}')" title="Delete">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
