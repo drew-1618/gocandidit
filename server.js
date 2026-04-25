@@ -260,7 +260,8 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
     const objTableMap = {
         'jobs': 'tblJobs',
         'education': 'tblEducation',
-        'projects': 'tblProjects'
+        'projects': 'tblProjects',
+        'resumes': 'tblResumes'
     }
 
     const strTableName = objTableMap[category]
@@ -269,7 +270,7 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
     }
 
     const strQuery = `delete from ${strTableName} where id = ? and user_id = ?`
-    db.run(strQuery, [id, userId], (err) => {
+    db.run(strQuery, [id, userId], function(err) {
         if (err) {
             res.status(500).json({error: err.message})
         } else if (this.changes === 0) {

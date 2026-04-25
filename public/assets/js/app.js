@@ -166,6 +166,26 @@ async function fetchVaultData(strCategory, strContainerId) {
                         </div>
                     </div>
                 `
+            } else if (strCategory === 'resumes') {
+                // only displaying a snippet of description
+                data.forEach(res => {
+                    html += `
+                        <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1 text-success">${res.job_title}</h5>
+                                <small class="text-muted">Target Description: ${res.job_description.substring(0, 60)}...</small>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary btn-sm" onclick="previewResume('${res.id}')" title="View Resume">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteResume('${res.id}')" title="Delete">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `
+                })
             }
         })
         html += '</div>'
@@ -211,8 +231,14 @@ function switchTab(tab) {
     
     currentTab = tab
 
+    // reset view state
     document.getElementById('view-welcome').classList.add('d-none')
     document.getElementById('view-editor').classList.remove('d-none')
+    document.getElementById('divQuill').classList.remove('d-none')
+    const saveBtn = document.querySelector('button[onclick="saveToVault()"]')
+    if (saveBtn) {
+        saveBtn.classList.remove('d-none')
+    }
 
     const welcomeView = document.getElementById('view-welcome')
     const editorView = document.getElementById('view-editor')
@@ -359,6 +385,26 @@ function switchTab(tab) {
 
             }
         })
+    } else if (currentTab === 'history') {
+        title.innerText = "Resume History"
+        formContainer.innerHTML = `
+            <div id="vault-list-history" class=mt-3">
+                <p class="text-center text-muted">Fetching your saved resumes...</p>
+            </div>
+        `
+
+        // hide quill editor and label
+        document.getElementById('divQuill').classList.add('d-none')
+        document.getElementById('divEditorActions').innerHTML = ''
+        // hide save button
+        const saveBtn = document.querySelector('button[onclick="saveToVault()"]')
+        if (saveBtn) {
+            saveBtn.classList.add('d-none')
+        }
+
+        // fetch and render resume history
+        fetchVaultData('resumes', 'vault-list-history')
+
     }
 
     // auto close sidebar on mobile

@@ -122,6 +122,11 @@
                                         <h5 class="fs-5 fw-bold"><i class="fas fa-magic-wand-sparkles fa-md mb-2 text-success"></i> Tailor Resume</h5>
                                     </button>
                                 </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="btn btn-light w-100 h-100 py-3 shadow-sm d-flex flex-column align-items-center" role="button" onclick="switchTab('history')">
+                                        <h5 class="fs-5 fw-bold"><i class="fa-solid fa-clock-rotate-left fa-md mb-2 text-success"></i> Resume History</h5>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -137,7 +142,7 @@
                                     <div class="col-md-6"><label class="form-label">Dates</label><input type="text" id="jobDate" class="form-control" placeholder="Month Year - Month Year"></div>
                                 </div>    
                             </div>
-                            <div class="mb-3">
+                            <div id="divQuill" class="mb-3">
                                 <label id="lblEditor" class="form-label">Additional Details & Achievements</label>
                                 <div id="editor" style="height: 250px;"></div>
                             </div>
