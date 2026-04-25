@@ -1,5 +1,7 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('path')
+const {shell} = require('electron')
+
 // This line starts your Express server immediately when the app opens
 require('./server.js') 
 
@@ -9,12 +11,17 @@ function createWindow() {
         height: 800,
         icon: path.join(__dirname, 'public/assets/img/icon.ico'),
         title: "GoCandidIt",
-        // This ensures the app feels like a real Windows/Mac tool
         autoHideMenuBar: true, 
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true
         }
+    })
+
+    // open links in default browser and prevent electron from trying
+    win.webContents.setWindowOpenHandler(({url}) => {
+        shell.openExternal(url)
+        return {action: 'deny'}
     })
 
     // We point Electron to your local Express server
