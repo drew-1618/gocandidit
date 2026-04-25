@@ -72,3 +72,24 @@
         display: none !important;
     }
 }
+/* Responsive Preview for Mobile */
+@media (max-width: 992px) {
+    #resume-print-preview {
+        padding: 10px !important; /* Less padding on mobile */
+    }
+
+    .resume-paper {
+        /* Scale the 8.5in paper down to fit the screen width */
+        transform: scale(0.45); /* Adjust this number based on your testing */
+        transform-origin: top center;
+        margin-bottom: -5in; /* Offset the whitespace created by scaling */
+    }
+}
+
+/* Ensure scaling doesn't affect the actual print job */
+@media print {
+    .resume-paper {
+        transform: none !important;
+        margin: 0 !important;
+    }
+}
