@@ -66,6 +66,10 @@ async function generateResume() {
         const data = await response.json()
 
         if (response.ok) {
+            new Notification('Resume Tailored!', {
+                body: 'Your new resume is ready in the editor.',
+                icon: 'assets/img/icon.ico'
+            })
             quill.root.innerHTML = data.resumeHtml
         } else {
             alert("Generation failed: " + data.error)
