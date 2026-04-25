@@ -94,6 +94,9 @@ function togglePresent(checkbox, dateInputId) {
 async function fetchVaultData(strCategory, strContainerId) {
     const sessionId = localStorage.getItem('sessionId')
     const container = document.getElementById(strContainerId)
+    if (!container) {
+        return
+    }
 
     try {
         const response = await fetch(`/api/${strCategory}`, {
@@ -168,24 +171,22 @@ async function fetchVaultData(strCategory, strContainerId) {
                 `
             } else if (strCategory === 'resumes') {
                 // only displaying a snippet of description
-                data.forEach(res => {
-                    html += `
-                        <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="mb-1 text-success">${res.job_title}</h5>
-                                <small class="text-muted">Target Description: ${res.job_description.substring(0, 60)}...</small>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn btn-outline-primary btn-sm" onclick="previewResume('${res.id}')" title="View Resume">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="deleteResume('${res.id}')" title="Delete">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
+                html += `
+                    <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1 text-success">${item.job_title}</h5>
+                            <small class="text-muted">Target Description: ${item.job_description.substring(0, 60)}...</small>
                         </div>
-                    `
-                })
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary btn-sm" onclick="previewResume('${item.id}')" title="View Resume">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteResume('${item.id}')" title="Delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `
             }
         })
         html += '</div>'
