@@ -386,7 +386,7 @@ function switchTab(tab) {
 
             }
         })
-    } else if (currentTab === 'history') {
+    } else if (currentTab === 'resumes') {
         title.innerText = "Resume History"
         formContainer.innerHTML = `
             <div id="vault-list-resumes" class=mt-3">
