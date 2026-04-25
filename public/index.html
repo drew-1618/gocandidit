@@ -34,7 +34,6 @@
             <a class="navbar-brand d-flex align-items-center">
             <img src="assets/img/logo.png" alt="GoCandidIt Logo" height="45" class="d-inline-block align-text-top me-2">
         </a>
-        <button id="btnLogout" class="btn btn-outline-danger d-none" onclick="logout()">Logout</button>
         </div>
     </nav>
 
@@ -73,7 +72,7 @@
                     <h5 class="offcanvas-title">Vault Navigation</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
                 </div>
-                <div class="offcanvas-body p-0">
+                <div class="offcanvas-body p-0 d-flex flex-column">
                     <div class="list-group list-group-flush">
                         <button class="list-group-item list-group-item-action bg-primary text-white border-secondary py-3" onclick="switchTab('profile')">
                             <i class="fas fa-user-circle me-2"></i> Personal Profile
@@ -92,6 +91,12 @@
                         </button>
                         <button class="list-group-item list-group-item-action bg-primary text-white border-secondary py-3" onclick="switchTab('resumes')">
                             <i class="fas fa-clock-rotate-left me-2"></i> My Recent Resumes
+                        </button>
+                    </div>
+                    <!-- Logout button -->
+                    <div class="p-3 border-top border-secondary mt-auto">
+                        <button id="btnLogout" class="btn btn-success w-100" onclick="logout()">
+                            <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
                         </button>
                     </div>
                 </div>

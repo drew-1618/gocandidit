@@ -703,6 +703,8 @@ async function logout() {
     }
     
     localStorage.removeItem('sessionId')
+    // refresh to default state
+    window.location.reload()
     clearAuthFields()
     updateUI()
 }
