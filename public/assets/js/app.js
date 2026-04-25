@@ -723,6 +723,7 @@ async function handleAuth() {
                 // save sessionId to localStorage
                 localStorage.setItem('sessionId', data.sessionId)
                 updateUI()
+                goHome()
             } else {
                 alert("Error: " + data.error)
             }
@@ -757,4 +758,26 @@ document.addEventListener('input', (event) => {
 })
 
 // Initialize the view on page load
-window.onload = updateUI
+window.onload = async () => {
+    const sessionId = localStorage.getItem('sessionId')
+    if (sessionId) {
+        try {
+            const response = await fetch('/api/profile', {
+                headers: {'x-session-id': sessionId}
+            })
+            if (response.ok) {
+                updateUI()
+                goHome()
+            } else {
+                // session expired or invalid
+                localStorage.removeItem('sessionId')
+                updateUI()
+            }
+        } catch (err) {
+            console.error("Auto-login failed: ", err)
+            updateUI()
+        }
+    } else {
+        updateUI()
+    }
+}

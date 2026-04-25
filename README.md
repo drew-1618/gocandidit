@@ -18,3 +18,4 @@ Gemini help to speed up and write delete route and implementation.
 Gemini help with endpoint to generate resume.
 Gemini to write code to display resume as a printed copy and print option.
 ChatGPT to help align logout button to the bottom of sidebar.
+Gemnini help with creating the ElectronJS app  

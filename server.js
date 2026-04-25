@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt')
 const sqlite3 = require('sqlite3')
 const { error, table } = require('console')
 const {GoogleGenerativeAI} = require("@google/generative-ai")
+const {app: electronApp} = require('electron')
 
 const app = express()
 const PORT = process.env.PORT || 8000
@@ -19,16 +20,95 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
 // connect to database
-const db = new sqlite3.Database('database.db', (err) => {
+// AppData/Roaming/gocandidit
+const dbPath = path.join(electronApp.getPath('userData'), 'database.db')
+
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.log(`Error opening database: ${err.message}`)
     } else {
-        console.log("Connected to database.db")
+        console.log(`Connected to local database at: ${dbPath}`)
     }
 })
 
+db.serialize(() => {
+    // 1. Users Table
+    db.run(`CREATE TABLE IF NOT EXISTS tblUsers (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE,
+        password_hash TEXT,
+        full_name TEXT,
+        skills TEXT,
+        phone TEXT,
+        linkedin_url TEXT,
+        github_url TEXT,
+        summary TEXT
+    )`);
+
+    // 2. Sessions Table
+    db.run(`CREATE TABLE IF NOT EXISTS tblSessions (
+        session_id TEXT PRIMARY KEY,
+        user_id TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES tblUsers(id)
+    )`);
+
+    // 3. Jobs Table
+    db.run(`CREATE TABLE IF NOT EXISTS tblJobs (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        company TEXT,
+        location TEXT,
+        role TEXT,
+        start_date TEXT,
+        end_date TEXT,
+        description TEXT,
+        FOREIGN KEY(user_id) REFERENCES tblUsers(id)
+    )`);
+
+    // 4. Education Table
+    db.run(`CREATE TABLE IF NOT EXISTS tblEducation (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        school_name TEXT,
+        degree TEXT,
+        major TEXT,
+        minor TEXT,
+        gpa TEXT,
+        location TEXT,
+        start_date TEXT,
+        end_date TEXT,
+        description TEXT,
+        FOREIGN KEY(user_id) REFERENCES tblUsers(id)
+    )`);
+
+    // 5. Projects Table
+    db.run(`CREATE TABLE IF NOT EXISTS tblProjects (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        title TEXT,
+        description TEXT,
+        tech_stack TEXT,
+        link TEXT,
+        proj_date TEXT,
+        FOREIGN KEY(user_id) REFERENCES tblUsers(id)
+    )`);
+
+    // 6. Resumes Table
+    db.run(`CREATE TABLE IF NOT EXISTS tblResumes (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        job_title TEXT,
+        job_description TEXT,
+        resume_html TEXT,
+        FOREIGN KEY(user_id) REFERENCES tblUsers(id)
+    )`);
+
+    console.log("Database schema verified/created.");
+});
+
 // delete sessions older than 12 hours
-const strCleanupQuery = "DELETE FROM tblSessions WHERE created_at <= datetime('now', '-12 hours')"
+const strCleanupQuery = "DELETE FROM tblSessions WHERE created_at <= datetime('now', '-30 days')"
 db.run(strCleanupQuery, (err) => {
     if (err) {
         console.error("Session cleanup failed: ", err.message)
@@ -359,7 +439,7 @@ app.post('/api/resumes', authorize, (req, res) => {
 
 app.get('/api/resumes', authorize, (req, res) => {
     const userId = req.userId
-    const strQuery = "SELECT id, job_title, job_description, resume_html FROM tblResumes WHERE user_id = ?"
+    const strQuery = "SELECT id, job_title, job_description, resume_html FROM tblResumes WHERE user_id = ? ORDER BY created_at DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
             return res.status(500).json({error: err.message})
