@@ -17,8 +17,10 @@ const sqlite3 = require('sqlite3')
 // attempt electron app
 let electronApp
 try {
-    const electron = require('electron')
-    electronApp = electron.app
+    if (isElectron) {
+        const electron = require('electron')
+        electronApp = electron.app
+    }
 } catch (err) {
     // running it in a browser
     electronApp = null
