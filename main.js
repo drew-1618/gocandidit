@@ -8,9 +8,6 @@ const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
     app.quit()
 } else {
-    // starts your Express server immediately when the app opens
-    require('./server.js') 
-
     let win
     function createWindow() {
         win = new BrowserWindow({
@@ -41,8 +38,11 @@ if (!gotTheLock) {
         win.loadURL('http://localhost:8000')
     }
 
-    app.whenReady().then(createWindow)
-
+    app.whenReady().then(() =>{
+        // starts your Express server immediately when the app opens
+        require('./server.js') 
+        createWindow()
+    })
     // focus on existing window if user tries to open another
     app.on('second-instance', () => {
         if (win) {

@@ -24,6 +24,12 @@
   "build": {
     "appId": "com.drew.gocandidit",
     "productName": "GoCandidIt",
+    "extraResources": [
+      {
+        "from": ".env",
+        "to": ".env"
+      }
+    ],
     "directories": {
       "output": "dist"
     },

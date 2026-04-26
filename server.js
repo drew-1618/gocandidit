@@ -1,14 +1,17 @@
-require('dotenv').config()
-const express = require('express')
 const path = require('path')
-const {v4: uuidv4} = require('uuid')
-const bcrypt = require('bcrypt')
-const sqlite3 = require('sqlite3')
+const isPackaged = !process.defaultApp
+require('dotenv').config({
+    path: isPackaged ? path.join(process.resourcesPath, '.env') : path.join(__dirname, '.env')
+})
 
 const {GoogleGenerativeAI} = require("@google/generative-ai")
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"})
 
+const express = require('express')
+const {v4: uuidv4} = require('uuid')
+const bcrypt = require('bcrypt')
+const sqlite3 = require('sqlite3')
 
 // attempt electron app
 let electronApp
@@ -30,15 +33,19 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // connect to database
 let dbPath
-if (electronApp) {
-    // use Roaming App Data for desktop app
-    dbPath = path.join(electronApp.getPath('userData'), 'database.db')
-} else {
-    // use project root for the browser/server env
-    dbPath = path.join(__dirname, 'database.db')
+function getDbPath() {
+    if (dbPath) return dbPath
+    if (electronApp) {
+        // use Roaming App Data for desktop app
+        dbPath = path.join(electronApp.getPath('userData'), 'database.db')
+    } else {
+        // use project root for the browser/server env
+        dbPath = path.join(__dirname, 'database.db')
+    }
+    return dbPath
 }
 
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database(getDbPath(), (err) => {
     if (err) {
         console.log(`Error opening database: ${err.message}`)
     } else {
