@@ -1,6 +1,5 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, shell} = require('electron')
 const path = require('path')
-const {shell} = require('electron')
 
 // prevents multiple instance errors
 const gotTheLock = app.requestSingleInstanceLock()
