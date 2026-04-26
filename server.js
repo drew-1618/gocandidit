@@ -1,5 +1,6 @@
 const path = require('path')
-const isPackaged = !process.defaultApp
+const isElectron = process.versions.hasOwnProperty('electron')
+const isPackaged = !process.defaultApp && isElectron
 require('dotenv').config({
     path: isPackaged ? path.join(process.resourcesPath, '.env') : path.join(__dirname, '.env')
 })
