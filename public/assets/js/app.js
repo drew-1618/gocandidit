@@ -555,10 +555,17 @@ async function saveToVault() {
         return
     }
 
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    })
+
     let objPayload = {}
     let strEndpoint = ''
     let arrRequiredFields = []
-
     const description = quill.root.innerHTML
 
     if (currentTab === 'jobs') {
@@ -623,6 +630,7 @@ async function saveToVault() {
     // clear previous errors so the user can fill them in
     document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'))
 
+    // gather missing required fields
     let arrMissingFields = []
     arrRequiredFields.forEach(id => {
         const input = document.getElementById(id)
@@ -632,15 +640,26 @@ async function saveToVault() {
         }
     })
 
+    // alert user of missing required fields
     if (arrMissingFields.length > 0) {
-        alert("Please fill in all required fields (*)")
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Fields',
+            text: 'Please fill in all required fields marked with an asterisk (*).',
+            confirmButtonColor: '#0d6efd'
+        })
         return
     }
 
     if (currentTab === 'generate') {
         const strJobTitle = document.getElementById('saveJobTitle').value.trim().toLowerCase()
         if (arrExistingResumeNames.includes(strJobTitle)) {
-            alert("You already have a resume with that name. Please choose a unique name.")
+            Swal.fire({
+                icon: 'error',
+                title: 'Duplicate Name',
+                text: 'You already have a resume with that name. Please choose a unique name.',
+                confirmButtonColor: '#22ba9c'
+            })
             document.getElementById('saveJobTitle').classList.add('is-invalid')
             return
         }
@@ -655,13 +674,6 @@ async function saveToVault() {
         })
 
         if (response.ok) {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            })
             Toast.fire({
                 icon: 'success',
                 // capitalize first letter and print the remainder of the word
@@ -686,10 +698,14 @@ async function saveToVault() {
             }
         } else {
             const errorData = await response.json()
-            alert(`Error saving: ${errorData.error}`)
+            Swal.fire('Error Saving', errorData.error, 'error')
         }
     } catch (err) {
         console.error("Vault save failed: ", err)
+        Toast.fire({
+            icon: 'error',
+            title: `${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)} failed to save`
+        })
     }
 }
 
