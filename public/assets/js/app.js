@@ -875,7 +875,7 @@ async function logout() {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, logout'
     })
-    .then(async (resukt) => {
+    .then(async (result) => {
         if (result.isConfirmed) {
             const sessionId = localStorage.getItem('sessionId')
             if (sessionId) {
