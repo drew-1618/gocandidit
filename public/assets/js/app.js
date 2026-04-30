@@ -44,7 +44,12 @@ async function generateResume() {
     const sessionId = localStorage.getItem('sessionId')
 
     if (!strJobDesc) {
-        alert("Please paste a job description first so the resume can be tailored for the job you want.")
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Description',
+            text: 'Please paste a job description first so the resume can be tailored for the job you want.',
+            confirmButtonColor: '#22ba9c'
+        })
         return
     }
 
@@ -67,11 +72,35 @@ async function generateResume() {
 
         if (response.ok) {
             quill.root.innerHTML = data.resumeHtml
+
+            // let user know AI finished
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            })
+            Toast.fire({
+                icon: 'success',
+                title: 'Resume tailored successfully'
+            })
         } else {
-            alert("Generation failed: " + data.error)
+            Swal.fire({
+                icon: 'error',
+                title: 'Generation Failed',
+                text: data.error,
+                confirmButtonColor: '#22ba9c'
+            })
         }
     } catch (err) {
         console.error("AI Generation Error: ", err)
+        Swal.fire({
+            icon: 'error',
+            title: 'System Error',
+            text: 'Could not connect to the AI service. Please check your connection.',
+            confirmButtonColor: '#22ba9c'
+        })
     } finally {
         // always remove the loading div
         divLoading.classList.add('d-none')
@@ -243,7 +272,12 @@ function switchTab(tab) {
     // prevent access if not logged in
     const sessionId = localStorage.getItem('sessionId')
     if (!sessionId) {
-        alert("Please log in to access the vault")
+        Swal.fire({
+            icon: 'error',
+            title: 'Access Denied',
+            text: 'Please log in to access your Resume Vault.',
+            confirmButtonColor: '#22ba9c'
+        })
         updateUI()
         return
     }
@@ -445,7 +479,12 @@ function previewCurrentDraft() {
     
     // don't preview if empty
     if (quill.getText().trim().length === 0) {
-        alert("There is no resume content to preview yet. Generate or type something first!")
+        Swal.fire({
+            icon: 'info',
+            title: 'Empty Draft',
+            text: 'There is no resume content to preview yet. Generate or type something first!',
+            confirmButtonColor: '#22ba9c'
+        })
         return
     }
 
@@ -744,11 +783,26 @@ async function handleAuth() {
     const email = document.getElementById('txtEmail').value
     const password = document.getElementById('txtPassword').value
 
+    if (!email || !password) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Information',
+            text: 'Please enter both an email and password.',
+            confirmButtonColor: '#22ba9c'
+        })
+        return
+    }
+
     // password confirmation check
     if (!isLoginMode) {
         const confirmPassword = document.getElementById('txtConfirmPassword').value
         if (password !== confirmPassword) {
-            alert("Passwords do not match")
+            Swal.fire({
+                icon: 'warning',
+                title: 'Passwords Mismatch',
+                text: 'The passwords you entered do not match. Please try again.',
+                confirmButtonColor: '#22ba9c'
+            })
             return
         }
     }
@@ -768,32 +822,75 @@ async function handleAuth() {
             if (data.sessionId) {
                 // save sessionId to localStorage
                 localStorage.setItem('sessionId', data.sessionId)
+                
+                // show quick success before transitioning view
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                })
+                Toast.fire({
+                    icon: 'success',
+                    title: isLoginMode ? 'Signed in successfully' : 'Account created successfully'
+                })
+
                 updateUI()
                 goHome()
             } else {
-                alert("Error: " + data.error)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Authentication Error',
+                    text: data.error || 'An unexpected error occurred.',
+                    confirmButtonColor: '#22ba9c'
+                })
             }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: isLoginMode ? 'Login Failed' : 'Registration Failed',
+                text: data.error || 'Please check your credentials and try again.',
+                confirmButtonColor: '#22ba9c'
+            })
         }
     } catch (err) {
         console.error("Authentication failed:", err)
+        Swal.fire({
+            icon: 'error',
+            title: 'Connection Error',
+            text: 'Unable to reach the server. Please check your internet connection.',
+            confirmButtonColor: '#22ba9c'
+        })
     }
 }
 
 async function logout() {
-    const sessionId = localStorage.getItem('sessionId')
-    if (sessionId) {
-        // Notify server to delete session from tblSessions
-        await fetch('/api/logout', {
-            method: 'DELETE',
-            headers: { 'x-session-id': sessionId }
-        })
-    }
-    
-    localStorage.removeItem('sessionId')
-    // refresh to default state
-    window.location.reload()
-    clearAuthFields()
-    updateUI()
+    Swal.fire({
+        title: 'Logout?',
+        text: "Are you sure you want to logout?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#22ba9c',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, logout'
+    })
+    .then(async (resukt) => {
+        if (result.isConfirmed) {
+            const sessionId = localStorage.getItem('sessionId')
+            if (sessionId) {
+                // Notify server to delete session from tblSessions
+                await fetch('/api/logout', {
+                    method: 'DELETE',
+                    headers: { 'x-session-id': sessionId }
+                })
+            }
+            
+            localStorage.removeItem('sessionId')
+            // refresh to default state
+            window.location.reload()
+        }
+    })
 }
 
 // remove red highlight as soon as the user starts typing/selecting
@@ -818,6 +915,17 @@ window.onload = async () => {
                 // session expired or invalid
                 localStorage.removeItem('sessionId')
                 updateUI()
+
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
+                Toast.fire({
+                    icon: 'info',
+                    title: 'Session expired. Please log in again.'
+                })
             }
         } catch (err) {
             console.error("Auto-login failed: ", err)
