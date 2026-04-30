@@ -655,7 +655,19 @@ async function saveToVault() {
         })
 
         if (response.ok) {
-            alert(`${currentTab} saved successfully`)
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            })
+            Toast.fire({
+                icon: 'success',
+                // capitalize first letter and print the remainder of the word
+                title: `${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)} saved`
+            })
+
             // clear input fields automatically (except for profile)
             // in case user wants to add multiple entries back to back (likely scenario)
             if (currentTab !== 'profile') {
