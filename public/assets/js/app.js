@@ -198,25 +198,43 @@ async function fetchVaultData(strCategory, strContainerId) {
 }
 
 async function deleteVaultItem(category, id) {
-    if (!confirm("Are you sure you want to delete this item? This action cannot be undone.")) return
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#22ba9c',
+        confirmButtonText: 'Yes, delete it.'
+    })
+    .then(async (result) => {
+        if (result.isConfirmed) {
+            const sessionId = localStorage.getItem('sessionId')
+            try {
+                const response = await fetch(`/api/${category}/${id}`, {
+                    method: 'DELETE',
+                    headers: {'x-session-id': sessionId}
+                })
 
-    const sessionId = localStorage.getItem('sessionId')
-    try {
-        const response = await fetch(`/api/${category}/${id}`, {
-            method: 'DELETE',
-            headers: {'x-session-id': sessionId}
-        })
-
-        if (response.ok) {
-            const strContainerId = `vault-list-${category}`
-            fetchVaultData(category, strContainerId)
-        } else {
-            const data = await response.json()
-            alert("Error: " + data.error)
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Deleted',
+                        text: 'The item has been deleted.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    })
+                    const strContainerId = `vault-list-${category}`
+                    fetchVaultData(category, strContainerId)
+                } else {
+                    const data = await response.json()
+                    Swal.fire('Error', data.error, 'error')
+                }
+            } catch (err) {
+                console.error("Delete failed: ", err)
+            }
         }
-    } catch (err) {
-        console.error("Delete failed: ", err)
-    }
+    })
 }
 
 let arrExistingResumeNames = []
