@@ -3,6 +3,12 @@
 
 GoCandidIt is an AI-powered resume tailoring application built with Electron and Node.js. It allows users to maintain a vault of their professional experience and use the Gemini API to instantly generate ATS-optimized resumes targeted at specific job descriptions.
 
+## The Name: GoCandidIt
+The name **GoCandidIt** is a dual-layered play on words designed for a professional context:
+* **"Go Candid"**: Encourages the user to be authentic and honest about their unique technical achievements rather than using generic templates.
+* **"Candidate"**: Since the tool is built for job seekers, the name is a direct nod to the user's role as a "Candidate" in the hiring process.
+* **Action-Oriented**: Represents the process of a candidate taking initiative in their career.
+
 ## Features
   - **The Vault**: Store and manage your work experience, education history, and technical projects in a local SQLite database.
   - **AI Tailoring**: Leverages the Gemini API to parse you experience and generate high-impact, professional resumes based on your desired job's description.
