@@ -13,6 +13,12 @@ const express = require('express')
 const {v4: uuidv4} = require('uuid')
 const bcrypt = require('bcrypt')
 const sqlite3 = require('sqlite3')
+const crypto = require('node:crypto')
+const { buffer } = require('node:stream/consumers')
+const algorithm = 'aes-256-cbc'
+
+const key = Buffer.from(process.env.ENCRYPTION_KEY, 'utf8')
+const ivLength = 16
 
 // attempt electron app
 let electronApp
@@ -130,8 +136,35 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
 
+    // add gemini_api_key column
+    db.run(`ALTER TABLE tblUsers ADD COLUMN gemini_api_key TEXT`, (err) => {
+        if (err) {
+            console.log("NOTE: gemini_api_key column might already exist or: ", err.message)
+        } else {
+            console.log("Added gemini_api_key column to tblUsers")
+        }
+    })
+
     console.log("Database schema verified/created.");
 });
+
+function encrypt(text) {
+    const iv = crypto.randomBytes(ivLength)
+    const cipher = crypto.createCipheriv(algorithm, key, iv)
+    let encrypted = cipher.update(text)
+    encrypted = Buffer.concat([encrypted, cipher.final()])
+    return iv.toString('hex') + ':' + encrypted.toString('hex')
+}
+
+function decrypt(text) {
+    const textParts = text.split(':')
+    const iv = Buffer.from(textParts.shift(), 'hex')
+    const encryptedText = Buffer.from(textParts.join(':'), 'hex')
+    const decipher = crypto.createDecipheriv(algorithm, key, iv)
+    let decrypted = decipher.update(encryptedText)
+    decrypted = Buffer.concat([decrypted, decipher.final()])
+    return decrypted.toString()
+}
 
 function convertDateToReadable(strDate) {
     if (!strDate || strDate === "Present") {
@@ -360,10 +393,12 @@ app.get('/api/projects/', authorize, (req, res) => {
 //  --- EXTRA USER PROFILE FIELDS ROUTE ---
 app.put('/api/profile', authorize, (req, res) => {
     const userId = req.userId
-    const {full_name, skills, phone, linkedin_url, github_url, summary} = req.body
+    const {full_name, skills, phone, linkedin_url, github_url, summary, gemini_api_key} = req.body
+    // only encrypt if an api key is given
+    const encryptedKey = gemini_api_key ? encrypt(gemini_api_key) : null
 
-    const strQuery = "UPDATE tblUsers SET full_name=?, skills=?, phone=?, linkedin_url=?, github_url=?, summary=? WHERE id = ?"
-    db.run(strQuery, [full_name, skills, phone, linkedin_url, github_url, summary, userId], (err) => {
+    const strQuery = "UPDATE tblUsers SET full_name=?, skills=?, phone=?, linkedin_url=?, github_url=?, summary=?, gemini_api_key=? WHERE id = ?"
+    db.run(strQuery, [full_name, skills, phone, linkedin_url, github_url, summary, encryptedKey, userId], (err) => {
         if (err) {
             res.status(500).json({error: err.message})
         } else {
@@ -379,6 +414,10 @@ app.get('/api/profile', authorize, (req, res) => {
         if (err) {
             res.status(500).json({error: err.message})
         } else {
+            if (row && row.gemini_api_key) {
+                // mask from ui
+                row.gemini_api_key = "STORED_ENCRYPTED"
+            }
             res.status(200).json(row || {})
         }
     })
@@ -419,10 +458,25 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
     const {jobDescription} = req.body
 
     try {
+        // get profile with encrypted api key
+        const profile = await new Promise((res, rej) => db.get("SELECT email, skills, phone, linkedin_url, summary, github_url, full_name, gemini_api_key FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
+        // default to model from .env
+        let activeModel = model
+
+        // if user provided their key, overwrite activeModel
+        if (profile.gemini_api_key) {
+            try {
+                const decryptedKey = decrypt(profile.gemini_api_key)
+                const userGenAI = new GoogleGenerativeAI(decryptedKey)
+                activeModel = userGenAI.getGenerativeModel({model: "gemini-3-flash-preview"})
+            } catch (decryptionError) {
+                console.error("Decryption failed, falling back to default key:", decryptionError)
+            }
+        }
+
         // get all data from db
         // for tblUsers, don't get bcrypted passwords. AI does not need that
         // call res(r) if it successfully got the data, otherwise call rej(e) to show something went wrong
-        const profile = await new Promise((res, rej) => db.get("SELECT email, skills, phone, linkedin_url, summary, github_url, full_name FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
         const jobs = await new Promise((res, rej) => db.all("SELECT company, role, location, start_date, end_date, description FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
         const education = await new Promise((res, rej) => db.all("SELECT school_name, degree, major, minor, gpa, location, start_date, end_date FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
         const projects = await new Promise((res, rej) => db.all("SELECT title, description, tech_stack, link, proj_date FROM tblProjects WHERE user_id = ? ORDER BY proj_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
@@ -463,7 +517,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
             ${jobDescription}
         `
 
-        const result = await model.generateContent(strPrompt)
+        const result = await activeModel.generateContent(strPrompt)
         const response = await result.response
         const text = response.text()
 
@@ -479,7 +533,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
         
     } catch (err) {
         console.error("AI API Error: ", err);
-        res.status(500).json({error: "Failed to gather vault data: " + err.message})
+        res.status(500).json({error: "Resume generationg failed. Check your API key. " + err.message})
     }
 })
 

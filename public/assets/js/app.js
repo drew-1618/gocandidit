@@ -324,6 +324,11 @@ function switchTab(tab) {
                 <div class="col-md-6"><label class="form-label">LinkedIn URL</label><input type="url" id="profLinkedIn" class="form-control" placeholder="https://linkedin.com/in/..."></div>
                 <div class="col-md-6"><label class="form-label">GitHub URL</label><input type="url" id="profGitHub" class="form-control" placeholder="https://github.com/..."></div>
                 <div class="col-md-6"><label class="form-label">Professional Skills</label><input type="text" id="profSkills" class="form-control" placeholder="Python, Node.js, C++"></div>
+                <div class="col-md-12">
+                    <label class="form-label">Custom Gemini API Key (Optional)</label>
+                    <input type="password" id="profApiKey" class="form-control" placeholder="Paste your key here">
+                    <small class="text-muted">Your key is encrypted before being saved to the vault.</small>
+                </div>
             </div>`
 
             // get data currently in db for user and auto fill
@@ -338,6 +343,8 @@ function switchTab(tab) {
                     document.getElementById('profLinkedIn').value = data.linkedin_url || ''
                     document.getElementById('profGitHub').value = data.github_url || ''
                     document.getElementById('profSkills').value = data.skills || ''
+                    // show masked value if user's key is stored
+                    document.getElementById('profApiKey').value = data.gemini_api_key === "STORED_ENCRYPTED" ? "***************************************" : ""
                     if (data.summary) {
                         quill.root.innerHTML = data.summary
                     }
@@ -660,6 +667,7 @@ async function saveToVault() {
             linkedin_url: document.getElementById('profLinkedIn').value.trim(),
             github_url: document.getElementById('profGitHub').value.trim(),
             skills: document.getElementById('profSkills').value.trim(),
+            gemini_api_key: document.getElementById('profApiKey').value.trim(),
             summary: description
         } 
     } else if (currentTab === 'generate') {
