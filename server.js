@@ -7,7 +7,7 @@ require('dotenv').config({
 
 const {GoogleGenerativeAI} = require("@google/generative-ai")
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"})
+const model = genAI.getGenerativeModel({model: "gemini-3-flash-preview"})
 
 const express = require('express')
 const {v4: uuidv4} = require('uuid')
@@ -132,6 +132,32 @@ db.serialize(() => {
 
     console.log("Database schema verified/created.");
 });
+
+function convertDateToReadable(strDate) {
+    if (!strDate || strDate === "Present") {
+        return strDate
+    }
+    if (!strDate.includes('-')) {
+        return strDate
+    }
+    objMonthMap = {
+        "01": "January",
+        "02": "February",
+        "03": "March",
+        "04": "April" ,
+        "05": "May",
+        "06": "June",
+        "07": "July",
+        "08": "August",
+        "09": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+    }
+    const strYear = strDate.split('-')[0]
+    const strMonth = objMonthMap[strDate.split('-')[1]]
+    return `${strMonth} ${strYear}`
+}
 
 // delete sessions older than 12 hours
 const strCleanupQuery = "DELETE FROM tblSessions WHERE created_at <= datetime('now', '-30 days')"
@@ -395,51 +421,59 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
     try {
         // get all data from db
         // for tblUsers, don't get bcrypted passwords. AI does not need that
+        // call res(r) if it successfully got the data, otherwise call rej(e) to show something went wrong
         const profile = await new Promise((res, rej) => db.get("SELECT email, skills, phone, linkedin_url, summary, github_url, full_name FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
-        const jobs = await new Promise((res, rej) => db.all("SELECT * FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
-        const education = await new Promise((res, rej) => db.all("SELECT * FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
-        const projects = await new Promise((res, rej) => db.all("SELECT * FROM tblProjects WHERE user_id = ? ORDER BY proj_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
+        const jobs = await new Promise((res, rej) => db.all("SELECT company, role, location, start_date, end_date, description FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
+        const education = await new Promise((res, rej) => db.all("SELECT school_name, degree, major, minor, gpa, location, start_date, end_date FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
+        const projects = await new Promise((res, rej) => db.all("SELECT title, description, tech_stack, link, proj_date FROM tblProjects WHERE user_id = ? ORDER BY proj_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
     
+        // format into a more readable string for AI to reduce errors
+        const formatExperience = (arr) => arr.map(item => `
+            - ROLE/TITLE: ${item.role || item.title}
+            - ORGANIZATION: ${item.company || 'Personal Project'}
+            - DATES: ${convertDateToReadable(item.start_date) || ''} - ${convertDateToReadable(item.end_date) || convertDateToReadable(item.proj_date) || ''}
+            - RAW DETAILS (HTML): ${item.description || 'No description provided'}
+        `).join("\n---\n")
+
         // build prompt with personalized data
         const strPrompt = `
-            ROLE: Expert resume architect
-            TASK: Create a tailored HTML resume that passes ATS
+            ROLE: Expert ATS-Optimization Resume Architect
+            TASK: Generate a high-impact, professional HTML resume.
 
-            STRICT RULES: 
-            1. ZERO HALLUCINATION: Use ONLY the data provided below. 
-            2. NO PLACEHOLDERS: Do not use "@email.com" or "(000) 000-0000" if the real data is present. Use the exact email and phone from the User Profile.
-            3. EXHAUSTIVE BULLETS: For Jobs and Projects, you MUST transform the 'description' field (which contains HTML) into a series of 2-5 high-impact bullet points in each work experience and projects. Do not just summarize; extract specific technical achievements.
-            4. MATCHING: Explicitly highlight ${JSON.stringify(profile.skills)} that appear in the Job Description.
-            5. EXACTNESS: Links, emails,  dates, etc. Must be exactly as stated.
+            CRITICAL INSTRUCTIONS:
+            1. EXHAUSTIVE BULLETS: For every Experience and Project entry, you MUST parse the 'RAW DETAILS' field. Extract technical achievements and transform them into 3-5 high-impact bullet points. Use action verbs (e.g., 'Optimized', 'Architected').
+            2. SKILLS SECTION: Create a dedicated 'Technical Skills' section. Use these specific skills from the user profile: ${profile.skills}. If any match the Target Job Description, BOLD them.
+            3. CONTACT INTEGRATION: Use exact contact info: Email: ${profile.email}, Phone: ${profile.phone}, LinkedIn: ${profile.linkedin_url}, GitHub: ${profile.github_url}.
+            4. ATS OPTIMIZATION: Tailor the professional summary and bullet points to match keywords found in the Target Job Description.
+            5. HTML FORMATTING: Return ONLY the inner HTML fragment. Your response must begin directly with an HTML tag like <h2> or <div>. DO NOT include \`\`\`html, <html>, <head>, <body>, or any markdown formatting of any kind.
 
-            USER DATA:
-            Profile: ${JSON.stringify(profile)}
-            EXPERIENCE: ${JSON.stringify(jobs)}
-            EDUCATION: ${JSON.stringify(education)}
-            PROJECTS: ${JSON.stringify(projects)}
+            USER PROFILE:
+            ${JSON.stringify(profile)}
+
+            WORK HISTORY:
+            ${formatExperience(jobs)}
+
+            PROJECT HISTORY:
+            ${formatExperience(projects)}
+
+            EDUCATION HISTORY:
+            ${JSON.stringify(education)}
 
             TARGET JOB DESCRIPTION:
-            ${JSON.stringify(jobDescription)}
-
-            GENERAL INSTRUCTIONS: 
-            1. Use clean HTML (h1, h2, h3, p, ul, li). Do not include <html> or <body> tags.
-            2. Tailor the content: Emphasize the experience and projects that match the Job Description.
-            3. Use action verbs (e.g., "Architected," "Optimized," "Spearheaded").
-            4. If the job description asks for a skill the user has, make sure it is prominent.
-            5. Use full professional names
-
-            OUTPT FORMAT:
-            Output should be approximately one page's worth length when printed
-            Format the resume professionally with sections for Contact, Summary, Experience, Projects, Education, and Skills.
-            Return only the inner HTML. Use <h2> for section headers, <strong> for titles, and <ul>/<li> for details.
+            ${jobDescription}
         `
 
         const result = await model.generateContent(strPrompt)
         const response = await result.response
         const text = response.text()
 
-        // cleanup response (markdown code blocks that AI typically inserts
-        const cleanHtml = text.replace(/```html|```/g, "")
+        // cleanup response (markdown code blocks that AI typically inserts and unnecessary HTML artifacts)
+        const cleanHtml = text
+            .replace(/^```[a-zA-Z]*\n?/m, "")   // strip opening code fence
+            .replace(/```\s*$/m, "")             // strip closing code fence
+            .replace(/<!DOCTYPE[\s\S]*?<body[^>]*>/i, "")  // strip full doc header if present
+            .replace(/<\/body>[\s\S]*$/i, "")    // strip closing body/html tags
+            .trim()
 
         res.status(200).json({resumeHtml: cleanHtml})
         

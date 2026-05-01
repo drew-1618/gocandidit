@@ -1,122 +1,147 @@
 /* Written with Gemini */
 
+/* --- Preview Overlay Container --- */
+#resume-print-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(30, 34, 45, 0.95); /* Deep professional dark overlay */
+    z-index: 9999;
+    display: block; /* Allows natural scrolling */
+    overflow-y: auto;
+    padding: 40px 0;
+    scrollbar-gutter: stable;
+}
+
+#print-preview-header {
+    position: sticky;
+    top: 20px;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+/* --- The Resume Paper --- */
 .resume-paper {
     background: white;
     width: 8.5in;
-    min-height: 11in; /* Fix the height to standard paper */
-    padding: 0.5in 0.75in; /* Standard margins */
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    min-height: 11in; /* Standard Letter height */
+    margin: 0 auto;
+    padding: 0.5in 0.75in;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     color: black;
-    font-family: 'Times New Roman', serif;
-    line-height: 1.4; /* Tighter line spacing */
-    overflow: visible; /* Ensures it doesn't bleed out in preview */
+    font-family: 'Times New Roman', Times, serif;
+    line-height: 1.3;
+    position: relative;
+    overflow: visible;
+
+    /* Visual "End of Page" Guide: Creates a dashed line at exactly 11 inches */
+    background-image: linear-gradient(to bottom, transparent 10.98in, #d1d1d1 11in);
+    background-size: 100% 11.01in;
 }
 
+/* --- Typography & Elements --- */
 .resume-paper h1 {
-    font-size: 22pt; /* Name size */
+    font-size: 20pt;
     text-align: center;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     text-transform: uppercase;
+    font-weight: bold;
 }
 
 .resume-paper h2 {
-    font-size: 14pt; /* Section Header size */
-    border-bottom: 1px solid #000;
-    margin-top: 15px;
-    margin-bottom: 8px;
+    font-size: 13pt;
+    border-bottom: 1.5px solid #000;
+    margin-top: 14px;
+    margin-bottom: 6px;
     text-transform: uppercase;
+    font-weight: bold;
 }
 
 .resume-paper h3 {
-    font-size: 12pt; /* Job/Project Title size */
-    margin-top: 10px;
-    margin-bottom: 2px;
+    font-size: 11.5pt;
+    margin-top: 8px;
+    margin-bottom: 1px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
 }
 
-.resume-paper p, .resume-paper li {
-    font-size: 10.5pt; /* Standard body text size */
-    margin-bottom: 4px;
+.resume-paper p, 
+.resume-paper li {
+    font-size: 10.5pt;
+    margin-bottom: 3px;
 }
 
 .resume-paper ul {
     padding-left: 20px;
+    margin-top: 2px;
 }
 
 .resume-paper li {
-    margin-bottom: 2px; /* Slightly tighter than the standard 4px for paragraphs */
+    margin-bottom: 2px;
 }
 
+/* Contact Info Styling */
+.resume-paper .contact-info {
+    text-align: center;
+    font-size: 10pt;
+    margin-bottom: 10px;
+}
 
+/* --- Print & PDF Engine Optimization --- */
 @media print {
-    /* This completely removes the buttons from the PDF/Printer output */
-    #print-preview-header {
-        display: none !important;
+    @page {
+        margin: 0;
+        size: letter;
     }
-
-    /* Ensure the background is white and removes the dark overlay */
-    #resume-print-preview {
-        background: white !important;
+    body {
+        margin: 0 !important;
         padding: 0 !important;
-        display: block !important;
+        background: white !important;
     }
 
-    /* Standardize the paper position for the PDF engine */
-    .resume-paper {
-        margin: 0 !important;
-        box-shadow: none !important;
-        border: none !important;
-    }
-    
-    /* Hide the rest of the UI just in case */
-    nav, .navbar, #vaultSidebar, main {
+    #print-preview-header, 
+    nav, 
+    .navbar, 
+    #vaultSidebar, 
+    main {
         display: none !important;
     }
-}
-/* Responsive Preview for Mobile */
-@media (max-width: 992px) {
-    #resume-print-preview {
-        padding: 10px !important; /* Less padding on mobile */
-    }
 
-    .resume-paper {
-        /* Scale the 8.5in paper down to fit the screen width */
-        transform: scale(0.45); /* Adjust this number based on your testing */
-        transform-origin: top center;
-        margin-bottom: -5in; /* Offset the whitespace created by scaling */
-    }
-}
-
-/* Ensure scaling doesn't affect the actual print job */
-@media print {
-    .resume-paper {
-        transform: none !important;
-        margin: 0 !important;
-    }
-}
-#resume-print-preview {
-    scrollbar-gutter: stable; /* Prevents layout shift when scrollbar appears */
-}
-
-/* Ensure the paper doesn't get cut off at the bottom */
-.resume-paper {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    transform-origin: top center;
-}
-
-@media print {
-    #print-preview-header {
-        display: none !important;
-    }
     #resume-print-preview {
         position: static !important;
         background: white !important;
         padding: 0 !important;
-    }
-    .resume-paper {
-        box-shadow: none !important;
         margin: 0 !important;
+        overflow: visible !important;
+    }
+
+    .resume-paper {
+        margin: 0 !important;
+        box-shadow: none !important;
         width: 100% !important;
+        background-image: none !important; /* Hide the page-break guide on print */
+        transform: none !important;
+    }
+}
+
+/* --- Mobile Responsive Scaling --- */
+@media (max-width: 992px) {
+    .resume-paper {
+        transform: scale(0.7);
+        transform-origin: top center;
+        margin-bottom: -3in;
+    }
+}
+
+@media (max-width: 768px) {
+    .resume-paper {
+        transform: scale(0.4);
+        margin-bottom: -6in;
     }
 }

@@ -71,7 +71,9 @@ async function generateResume() {
         const data = await response.json()
 
         if (response.ok) {
-            quill.root.innerHTML = data.resumeHtml
+            const outputDiv = document.getElementById('resume-output')
+            outputDiv.innerHTML = data.resumeHtml
+            outputDiv.style.display = 'block'
 
             // let user know AI finished
             const Toast = Swal.mixin({
@@ -266,6 +268,12 @@ async function deleteVaultItem(category, id) {
     })
 }
 
+function editResumeDraft() {
+    quill.clipboard.dangerouslyPasteHTML(document.getElementById('resume-output').innerHTML)
+    document.getElementById('resume-output').style.display = 'none'
+    document.getElementById('divQuill').classList.remove('d-none')
+}
+
 let arrExistingResumeNames = []
 let currentTab = 'jobs'
 function switchTab(tab) {
@@ -410,12 +418,16 @@ function switchTab(tab) {
                 <div class="spinner-border text-primary" role="status"></div>
                 <p>AI is tailoring your resume...</p>
             </div>
+            <div id="resume-output" class="border rounded p-3 bg-white mt-3" style="display:none;"></div>
         `
 
         document.getElementById('divEditorActions').innerHTML = `
             <div class="d-flex gap-2 mb-3">
                 <button class="btn btn-primary" onclick="previewCurrentDraft()">
                     <i class="fa-solid fa-eye me-2"></i>Preview Draft
+                </button>
+                <button class="btn btn-outline-primary" onclick="editResumeDraft()">
+                    <i class="fa-solid fa-pen me-2"></i>Edit Draft
                 </button>
             </div>
             <div class="mb-3">
@@ -427,6 +439,7 @@ function switchTab(tab) {
         editorLabel.innerText = "AI-Generated Draft (Review & Edit)"
         // start with blank slate
         quill.setContents([])
+        document.getElementById('divQuill').classList.add('d-none')
 
         // get all resume names
         arrExistingResumeNames = []
@@ -475,10 +488,13 @@ function switchTab(tab) {
 }
 
 function previewCurrentDraft() {
-    const htmlContent = quill.root.innerHTML
-    
-    // don't preview if empty
-    if (quill.getText().trim().length === 0) {
+    // check resume-output div first, fall back to quill
+    const outputDiv = document.getElementById('resume-output')
+    const htmlContent = outputDiv && outputDiv.style.display !== 'none' && outputDiv.innerHTML.trim()
+        ? outputDiv.innerHTML
+        : quill.root.innerHTML
+
+    if (!htmlContent || htmlContent.trim() === '' || htmlContent === '<p><br></p>') {
         Swal.fire({
             icon: 'info',
             title: 'Empty Draft',
@@ -488,15 +504,13 @@ function previewCurrentDraft() {
         return
     }
 
-    // use same overlay as the history preview
     const overlay = document.createElement('div')
-    overlay.id = 'resume-print-preview'    
+    overlay.id = 'resume-print-preview'
     overlay.style = `
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8); z-index: 9999; 
-        display: flex; flex-direction: column; align-items: center; 
-        overflow-y: auto; padding: 40px;
-    `;
+        background: rgba(0,0,0,0.8); z-index: 9999;
+        display: block; overflow-y: auto; padding: 40px;
+    `
 
     overlay.innerHTML = `
         <div id="print-preview-header" class="d-flex gap-3 mb-3">
@@ -510,7 +524,7 @@ function previewCurrentDraft() {
         <div class="resume-paper">
             ${htmlContent}
         </div>
-    `;
+    `
     document.body.appendChild(overlay)
 }
 
@@ -532,8 +546,7 @@ async function previewResume(id) {
             overlay.style = `
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(0,0,0,0.8); z-index: 9999; 
-                display: flex; flex-direction: column; align-items: center; 
-                overflow-y: auto; padding: 40px;
+                display: block; overflow-y: auto; padding: 40px;
             `;
 
             overlay.innerHTML = `
@@ -545,11 +558,7 @@ async function previewResume(id) {
                         <i class="fa-solid fa-times"></i> Close
                     </button>
                 </div>
-                <div class="resume-paper" style="
-                    background: white; width: 8.5in; min-height: 11in;
-                    padding: 0.5in; box-shadow: 0 0 20px rgba(0,0,0,0.5);
-                    color: black; font-family: 'Times New Roman', serif;
-                ">
+                <div class="resume-paper">
                     ${resume.resume_html}
                 </div>
             `;
