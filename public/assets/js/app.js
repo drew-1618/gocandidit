@@ -134,7 +134,7 @@ async function fetchVaultData(strCategory, strContainerId) {
         const data = await response.json()
 
         if (data.length === 0) {
-            container.innerHTML = `<p class="text-muted italic"/>No records found in your vault for this category.</p>`
+            container.innerHTML = `<p class="text-muted italic"/><i class="fas fa-folder-open text-muted"></i> No records found in your vault.</p>`
             return
         }
 
@@ -868,7 +868,7 @@ async function handleAuth() {
 async function logout() {
     Swal.fire({
         title: 'Logout?',
-        text: "Are you sure you want to logout?",
+        text: "Are you sure you want to logout?",       
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#22ba9c',
