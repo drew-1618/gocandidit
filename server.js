@@ -394,7 +394,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
 
     try {
         // get all data from db
-        // for tblUsers, don't get bycrypted passwords. AI does not need that
+        // for tblUsers, don't get bcrypted passwords. AI does not need that
         const profile = await new Promise((res, rej) => db.get("SELECT email, skills, phone, linkedin_url, summary, github_url, full_name FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
         const jobs = await new Promise((res, rej) => db.all("SELECT * FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
         const education = await new Promise((res, rej) => db.all("SELECT * FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
