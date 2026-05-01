@@ -56,10 +56,10 @@ If you want to install GoCandidIt as a standalone desktop application rather tha
   3. **Post-Installation**:
     - Once installed, the app will run as a native window and does not require you to keep a terminal window open.
 
-## Data Persistence Note
-GoCandidIt treats the Desktop and Browser environments independently:
-* **Desktop App**: Data is saved to your system's local application data folder. 
-* **Browser Version**: Data is saved to a `database.db` file within the project directory.
+> [!NOTE] Data Persistence
+> GoCandidIt treats the Desktop and Browser environments independently:
+> * **Desktop App**: Data is saved to your system's local application data folder. 
+> * **Browser Version**: Data is saved to a `database.db` file within the project directory.
 
 Please note that accounts and "Vault" data do not sync between these two versions; they maintain separate local databases.
 
