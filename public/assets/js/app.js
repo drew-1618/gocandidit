@@ -618,7 +618,7 @@ async function saveToVault() {
 
     if (currentTab === 'jobs') {
         strEndpoint = '/api/jobs'
-        arrRequiredFields = ['jobCompany', 'jobLocation', 'jobRole', 'jobStartDate']
+        arrRequiredFields = ['jobCompany', 'jobLocation', 'jobRole', 'jobStartDate', 'jobEndDate']
         objPayload = {
             company: document.getElementById('jobCompany').value.trim(),
             location: document.getElementById('jobLocation').value.trim(),
