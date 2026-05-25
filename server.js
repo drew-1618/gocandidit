@@ -74,7 +74,8 @@ db.serialize(() => {
         phone TEXT,
         linkedin_url TEXT,
         github_url TEXT,
-        summary TEXT
+        summary TEXT,
+        gemini_api_key TEXT
     )`);
 
     // Sessions Table
@@ -136,15 +137,6 @@ db.serialize(() => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
-
-    // add gemini_api_key column
-    db.run(`ALTER TABLE tblUsers ADD COLUMN gemini_api_key TEXT`, (err) => {
-        if (err) {
-            console.log("NOTE: gemini_api_key column might already exist or: ", err.message)
-        } else {
-            console.log("Added gemini_api_key column to tblUsers")
-        }
-    })
 
     console.log("Database schema verified/created.");
 });
