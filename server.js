@@ -133,6 +133,7 @@ db.serialize(() => {
         job_title TEXT,
         job_description TEXT,
         resume_html TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
 
