@@ -145,3 +145,22 @@
         margin-bottom: -6in;
     }
 }
+
+@media print {
+    #print-preview-header {
+        display: none !important;
+    }
+    body * {
+        visibility: hidden;
+    }
+    #resume-print-preview, #resume-print-preview .resume-paper, #resume-print-preview .resume-paper * {
+        visibility: visible;
+    }
+    #resume-print-preview {
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: white !important;
+        padding: 0 !important;
+    }
+}
