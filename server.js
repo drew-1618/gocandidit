@@ -546,7 +546,7 @@ app.post('/api/resumes', authorize, (req, res) => {
 
 app.get('/api/resumes', authorize, (req, res) => {
     const userId = req.userId
-    const strQuery = "SELECT id, job_title, job_description, resume_html FROM tblResumes WHERE user_id = ? ORDER BY created_at DESC"
+    const strQuery = "SELECT id, job_title, job_description, resume_html, created_at FROM tblResumes WHERE user_id = ? ORDER BY created_at DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
             return res.status(500).json({error: err.message})
