@@ -206,7 +206,7 @@ async function fetchVaultData(strCategory, strContainerId) {
                     <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="mb-1 text-success">${item.job_title}</h5>
-                            <small class="text-muted">Target Description: ${item.job_description.substring(0, 60)}...</small>
+                            <small class="text-muted">Target Description: ${(item.job_description || "").substring(0, 60)}...</small>
                         </div>
                         <div class="d-flex gap-2">
                             <button class="btn btn-outline-primary btn-md border-0" onclick="previewResume('${item.id}')" title="View Resume">
