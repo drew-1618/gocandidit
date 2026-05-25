@@ -68,26 +68,3 @@ If you want to install GoCandidIt as a standalone desktop application rather tha
 > * **Browser Version**: Data is saved to a `database.db` file within the project directory.
 
 Please note that accounts and "Vault" data do not sync between these two versions; they maintain separate local databases.
-
----
-
-#### AI Usage Documentation
-Branding and project architecture brainstormed in collaboration with Gemini.
-Gemini to format README.
-Gemini to use Nodemon to automatically restart backend server when saving a file in development.
-CanvaAI to generate logo and favicon.
-Gemini to help with database creation.
-Gemini help with authorization function in server.js and passing it in with the routes
-Gemini help with clearing old sessions after connecting to database
-Gemini to help speed up logging in and registration for single page application
-Gemini to help with sidebar navigation
-Gemini help with auto filling personal information from database.
-Gemini help with building list of cards from vault
-Gemini to help with marking end dates to present.
-Gemini help to speed up and write delete route and implementation.
-Gemini help with endpoint to generate resume.
-Gemini to write code to display resume as a printed copy and print option.
-ChatGPT to help align logout button to the bottom of sidebar.
-Gemnini help with creating the ElectronJS app and logistics and preferences.
-Claude to trouble shoot issue with API key not working in electronJS app.
-Gemini to help with logic to encrypt & decrypt user's API key.
