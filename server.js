@@ -526,7 +526,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
         
     } catch (err) {
         console.error("AI API Error: ", err);
-        res.status(500).json({error: "Resume generationg failed. Check your API key. " + err.message})
+        res.status(500).json({error: "Resume generation failed. Check your API key. " + err.message})
     }
 })
 
