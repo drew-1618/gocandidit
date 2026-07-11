@@ -467,6 +467,9 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
             }
         }
 
+        // destructure profile to remove gemini_api_key before sending to AI
+        const {gemini_api_key, ...safeProfile} = profile
+
         // get all data from db
         // for tblUsers, don't get bcrypted passwords. AI does not need that
         // call res(r) if it successfully got the data, otherwise call rej(e) to show something went wrong
@@ -489,13 +492,13 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
 
             CRITICAL INSTRUCTIONS:
             1. EXHAUSTIVE BULLETS: For every Experience and Project entry, you MUST parse the 'RAW DETAILS' field. Extract technical achievements and transform them into 3-5 high-impact bullet points. Use action verbs (e.g., 'Optimized', 'Architected').
-            2. SKILLS SECTION: Create a dedicated 'Technical Skills' section. Use these specific skills from the user profile: ${profile.skills}. If any match the Target Job Description, BOLD them.
-            3. CONTACT INTEGRATION: Use exact contact info: Email: ${profile.email}, Phone: ${profile.phone}, LinkedIn: ${profile.linkedin_url}, GitHub: ${profile.github_url}.
+            2. SKILLS SECTION: Create a dedicated 'Technical Skills' section. Use these specific skills from the user safeProfile: ${safeProfile.skills}. If any match the Target Job Description, BOLD them.
+            3. CONTACT INTEGRATION: Use exact contact info: Email: ${safeProfile.email}, Phone: ${safeProfile.phone}, LinkedIn: ${safeProfile.linkedin_url}, GitHub: ${safeProfile.github_url}.
             4. ATS OPTIMIZATION: Tailor the professional summary and bullet points to match keywords found in the Target Job Description.
             5. HTML FORMATTING: Return ONLY the inner HTML fragment. Your response must begin directly with an HTML tag like <h2> or <div>. DO NOT include \`\`\`html, <html>, <head>, <body>, or any markdown formatting of any kind.
 
             USER PROFILE:
-            ${JSON.stringify(profile)}
+            ${JSON.stringify(safeProfile)}
 
             WORK HISTORY:
             ${formatExperience(jobs)}
