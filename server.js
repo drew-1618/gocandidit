@@ -235,6 +235,42 @@ function authorize(req, res, next) {
 }
 
 
+// wraps Gemini API call with a time out and retry mechanism
+async function generateWithRetry(modelInstance, prompt, maxRetries = 3, timeout = 30000) {
+    for (let attempt = 1; attempt <= maxRetries; attempts++) {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+        try {
+            const timeoutPromise = new Promise((_, reject) => {
+                controller.signal.addEventListener('abort', () => {
+                    reject(new Error('AI request timed out'))
+                })
+            })
+            const result = await Promise.race([
+                modelInstance.generateContent(prompt),
+                timeoutPromise
+            ])
+
+            clearTimeout(timeoutId)
+            return await result.response
+        } catch (err) {
+            clearTimeout(timeoutId)
+            const isTransient = err.message.includes('timed out') || 
+                                err.message.includes("429") || 
+                                err.message.includes("503")
+            if (isTransient && attempt < maxRetries) {
+                console.warn(`Attempt ${attempt} failed: ${err.message}. Retrying...`)
+                // exponential backoff
+                await new Promise(resolve => setTimeout(resolve, 2000 * attempt))
+                continue
+            }
+            // if its a hard error or max retries reached, throw the error
+            throw err
+    }
+}
+
+
 // --- REGISTER ROUTE ---
 app.post('/api/register', (req, res) => {
     const {email, password} = req.body
@@ -534,8 +570,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
             ${jobDescription}
         `
 
-        const result = await activeModel.generateContent(strPrompt)
-        const response = await result.response
+        const response = await generateWithRetry(activeModel, strPrompt)
         const text = response.text()
 
         // cleanup response (markdown code blocks that AI typically inserts and unnecessary HTML artifacts)
@@ -549,8 +584,11 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
         res.status(200).json({resumeHtml: cleanHtml})
         
     } catch (err) {
-        console.error("AI API Error: ", err);
-        res.status(500).json({error: "Resume generation failed. Check your API key. " + err.message})
+        console.error("AI API Error: ", err)
+        if (err.message.includes("AI request timed out")) {
+            return res.status(504).json({error: "The AI engine took too long to respond. Please try again."})
+        }
+        res.status(500).json({error: "Resume generation failed. " + err.message})
     }
 })
 
