@@ -166,6 +166,13 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES tblUsers(id)
     )`);
 
+    // create indexes for faster lookups
+    db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_user ON tblSessions(user_id);`)
+    db.run(`CREATE INDEX IF NOT EXISTS idx_jobs_user ON tblJobs(user_id);`)
+    db.run(`CREATE INDEX IF NOT EXISTS idx_education_user ON tblEducation(user_id);`)
+    db.run(`CREATE INDEX IF NOT EXISTS idx_projects_user ON tblProjects(user_id);`)
+    db.run(`CREATE INDEX IF NOT EXISTS idx_resumes_user ON tblResumes(user_id);`)
+
     console.log("Database schema verified/created.");
 });
 
