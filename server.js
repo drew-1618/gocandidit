@@ -35,7 +35,6 @@ const crypto = require('node:crypto')
 const { buffer } = require('node:stream/consumers')
 const algorithm = 'aes-256-cbc'
 
-const key = Buffer.from(process.env.ENCRYPTION_KEY, 'utf8')
 const ivLength = 12  // AES block size for GCM mode
 
 // attempt electron app
