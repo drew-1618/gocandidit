@@ -71,11 +71,22 @@ function getDbPath() {
     return dbPath
 }
 
+const BUSY_TIMEOUT = 5000
 const db = new sqlite3.Database(getDbPath(), (err) => {
     if (err) {
         console.log(`Error opening database: ${err.message}`)
     } else {
         console.log(`Connected to local database at: ${dbPath}`)
+
+        // enable write-ahead logging for better concurrency
+        db.run("PRAGMA journal_mode = WAL;", (err) => {
+            if (err) console.error("Failed to enable WAL mode:", err.message)
+        })
+
+        // wait up to X seconds if db is locked before throwing busy error
+        db.run(`PRAGMA busy_timeout = ${BUSY_TIMEOUT};`, (err) => {
+            if (err) console.error("Failed to set busy timeout:", err.message)
+        })
     }
 })
 
