@@ -15,7 +15,7 @@ if (!process.env.ENCRYPTION_KEY) {
     process.exit(1)
 }
 
-// validate encription key length (32 bytes for AES-256)
+// validate encription key length (32 bytes for AES-256-cbc)
 const key = Buffer.from(process.env.ENCRYPTION_KEY, 'utf-8')
 if (key.length !== 32) {
     console.error(`FATAL ERROR: ENCRYPTION_KEY must be exactly 32 bytes (256 bits) for aes-256-cbc. Current length: ${key.length} bytes.`)
@@ -36,7 +36,7 @@ const { buffer } = require('node:stream/consumers')
 const algorithm = 'aes-256-cbc'
 
 const key = Buffer.from(process.env.ENCRYPTION_KEY, 'utf8')
-const ivLength = 16
+const ivLength = 12  // AES block size for GCM mode
 
 // attempt electron app
 let electronApp
@@ -164,14 +164,17 @@ function encrypt(text) {
     const cipher = crypto.createCipheriv(algorithm, key, iv)
     let encrypted = cipher.update(text)
     encrypted = Buffer.concat([encrypted, cipher.final()])
-    return iv.toString('hex') + ':' + encrypted.toString('hex')
+    const authTag = cipher.getAuthTag()
+    return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted.toString('hex')
 }
 
 function decrypt(text) {
     const textParts = text.split(':')
     const iv = Buffer.from(textParts.shift(), 'hex')
+    const authTag = Buffer.from(textParts.shift(), 'hex')
     const encryptedText = Buffer.from(textParts.join(':'), 'hex')
     const decipher = crypto.createDecipheriv(algorithm, key, iv)
+    decipher.setAuthTag(authTag)
     let decrypted = decipher.update(encryptedText)
     decrypted = Buffer.concat([decrypted, decipher.final()])
     return decrypted.toString()
