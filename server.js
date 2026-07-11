@@ -267,6 +267,7 @@ async function generateWithRetry(modelInstance, prompt, maxRetries = 3, timeout 
             }
             // if its a hard error or max retries reached, throw the error
             throw err
+        }
     }
 }
 
