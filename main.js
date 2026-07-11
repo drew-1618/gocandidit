@@ -1,4 +1,4 @@
-const { startServer } = require('./server.js')
+const { startServer, closeDatabase } = require('./server.js')
 const { app, BrowserWindow, shell} = require('electron')
 const path = require('path')
 
@@ -59,6 +59,27 @@ if (!gotTheLock) {
 
     app.on('window-all-closed', () => {
         if (process.platform !== 'darwin') {
+            app.quit()
+        }
+    })
+
+    // flag to prevent infinite quit loops
+    let isQuitting = false
+
+    // intercept quit event to close db before quitting
+    app.on('before-quit', (event) => {
+        if (!isQuitting) {
+            // prevent default quit behavior
+            event.preventDefault()
+            isQuitting = true
+
+            try {
+                console.log("Shutting down cleanly...")
+                await closeDatabase()
+            } catch (error) {
+                console.error("Database cleanup error:", error)
+            }
+
             app.quit()
         }
     })
