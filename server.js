@@ -244,7 +244,7 @@ async function generateWithRetry(modelInstance, prompt, maxRetries = 3, timeout 
         try {
             const timeoutPromise = new Promise((_, reject) => {
                 controller.signal.addEventListener('abort', () => {
-                    reject(new Error('AI request timed out'))
+                    reject(new Error('AI_TIMEOUT'))
                 })
             })
             const result = await Promise.race([
@@ -256,7 +256,7 @@ async function generateWithRetry(modelInstance, prompt, maxRetries = 3, timeout 
             return await result.response
         } catch (err) {
             clearTimeout(timeoutId)
-            const isTransient = err.message.includes('timed out') || 
+            const isTransient = err.message.includes('AI_TIMEOUT') || 
                                 err.message.includes("429") || 
                                 err.message.includes("503")
             if (isTransient && attempt < maxRetries) {
@@ -576,18 +576,38 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
 
         // cleanup response (markdown code blocks that AI typically inserts and unnecessary HTML artifacts)
         const cleanHtml = text
-            .replace(/^```[a-zA-Z]*\n?/m, "")   // strip opening code fence
-            .replace(/```\s*$/m, "")             // strip closing code fence
-            .replace(/<!DOCTYPE[\s\S]*?<body[^>]*>/i, "")  // strip full doc header if present
-            .replace(/<\/body>[\s\S]*$/i, "")    // strip closing body/html tags
+
+        // globally strip code fences
+        cleanHtml = cleanHtml.replace(/```[a-zA-Z]*\n?/g, "").replace(/```/g, "")
+        
+        // isolate actual HTML by remvoving any pre/post text added by AI
+        const firstTagIndex = cleanHtml.indexOf('<')
+        const lastTagIndex = cleanHtml.lastIndexOf('>')
+
+        if (firstTagIndex !== -1 && lastTagIndex !== -1 && lastTagIndex > firstTagIndex) {
+            cleanHtml = cleanHtml.substring(firstTagIndex, lastTagIndex + 1)
+        }
+
+        // strip full document headers/footers if AI ignored instructions
+        cleanHtml = cleanHtml
+            .replace(/<!DOCTYPE[\s\S]*?<body[^>]*>/i, "")
+            .replace(/<\/body>[\s\S]*$/i, "")
             .trim()
+
+        // if result is empty or lacks basic HTML structure, reject
+        if (!cleanHtml || !cleanHtml.includes('<') || !cleanHtml.includes('>')) {
+            throw new Error("AI_MALFORMED_OUTPUT")
+        }
 
         res.status(200).json({resumeHtml: cleanHtml})
         
     } catch (err) {
         console.error("AI API Error: ", err)
-        if (err.message.includes("AI request timed out")) {
+        if (err.message.includes("AI_TIMEOUT")) {
             return res.status(504).json({error: "The AI engine took too long to respond. Please try again."})
+        }
+        if (err.message.includes("AI_MALFORMED_OUTPUT")) {
+            return res.status(422).json({error: "The AI response was malformed. Please try again."})
         }
         res.status(500).json({error: "Resume generation failed. " + err.message})
     }
