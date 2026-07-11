@@ -236,7 +236,7 @@ function authorize(req, res, next) {
 
 // wraps Gemini API call with a time out and retry mechanism
 async function generateWithRetry(modelInstance, prompt, maxRetries = 3, timeout = 30000) {
-    for (let attempt = 1; attempt <= maxRetries; attempts++) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeout)
 
