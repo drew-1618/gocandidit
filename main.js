@@ -1,3 +1,4 @@
+const { startServer } = require('./server.js')
 const { app, BrowserWindow, shell} = require('electron')
 const path = require('path')
 
@@ -8,7 +9,8 @@ if (!gotTheLock) {
     app.quit()
 } else {
     let win
-    function createWindow() {
+
+    async function createWindow() {
         win = new BrowserWindow({
             width: 1280,
             height: 800,
@@ -33,13 +35,16 @@ if (!gotTheLock) {
             return {action: 'deny'}
         })
 
-        // point Electron to local express server
-        win.loadURL('http://localhost:8000')
+        try {
+            const activePort = await startServer()
+            win.loadURL(`http://localhost:${activePort}`)
+        } catch (error) {
+            console.error("Failed to start the local Express server:", error)
+        }
     }
 
     app.whenReady().then(() =>{
         // starts your Express server immediately when the app opens
-        require('./server.js') 
         createWindow()
     })
     // focus on existing window if user tries to open another
@@ -53,7 +58,9 @@ if (!gotTheLock) {
     })
 
     app.on('window-all-closed', () => {
-        if (process.platform !== 'darwin') app.quit()
+        if (process.platform !== 'darwin') {
+            app.quit()
+        }
     })
 
 }
