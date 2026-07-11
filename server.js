@@ -667,6 +667,21 @@ app.get('/api/resumes', authorize, (req, res) => {
     })
 })
 
+// safely close db connection
+function closeDatabase() {
+    return new Promise((resolve, reject) => {
+        db.close((err) => {
+            if (err) {
+                console.error("Error closing database: ", err.message)
+                reject(err)
+            } else {
+                console.log("Database connection closed gracefully.")
+                resolve()
+            }
+        })
+    })
+}
+
 function startServer() {
     return new Promise((resolve, reject) => {
         const server = app.listen(PORT, () => {
@@ -688,4 +703,4 @@ if (require.main === module) {
 }
 
 // export for electron to consume
-module.exports = {startServer, app}
+module.exports = {startServer, closeDatabase, app}
