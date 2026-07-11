@@ -5,6 +5,24 @@ require('dotenv').config({
     path: isPackaged ? path.join(process.resourcesPath, '.env') : path.join(__dirname, '.env')
 })
 
+// check existence of env variables
+if (!process.env.GEMINI_API_KEY) {
+    console.error("FATAL ERROR: GEMINI_API_KEY is missing from the environment.")
+    process.exit(1)
+}
+if (!process.env.ENCRYPTION_KEY) {
+    console.error("FATAL ERROR: ENCRYPTION_KEY is missing from the environment.")
+    process.exit(1)
+}
+
+// validate encription key length (32 bytes for AES-256)
+const key = Buffer.from(process.env.ENCRYPTION_KEY, 'utf-8')
+if (key.length !== 32) {
+    console.error(`FATAL ERROR: ENCRYPTION_KEY must be exactly 32 bytes (256 bits) for aes-256-cbc. Current length: ${key.length} bytes.`)
+    process.exit(1)
+}
+
+
 const {GoogleGenerativeAI} = require("@google/generative-ai")
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({model: "gemini-3-flash-preview"})
