@@ -207,7 +207,7 @@ function convertDateToReadable(strDate) {
 }
 
 // delete sessions older than 12 hours
-const strCleanupQuery = "DELETE FROM tblSessions WHERE created_at <= datetime('now', '-30 days')"
+const strCleanupQuery = "DELETE FROM tblSessions WHERE created_at <= datetime('now', '-12 hours')"
 db.run(strCleanupQuery, (err) => {
     if (err) {
         console.error("Session cleanup failed: ", err.message)
@@ -223,7 +223,7 @@ function authorize(req, res, next) {
     if (!sessionId) {
         return res.status(401).json({error: "No session found. Please log in"})
     }
-    const strQuery = "SELECT user_id FROM tblSessions WHERE session_id = ?"
+    const strQuery = "SELECT user_id FROM tblSessions WHERE session_id = ? AND created_at > datetime('now', '-12 hours')"
     db.get(strQuery, [sessionId], (err, row) => {
         if (err || !row) {
             res.status(401).json({error: "Invalid or expired session"})
