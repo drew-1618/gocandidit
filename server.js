@@ -652,6 +652,25 @@ app.get('/api/resumes', authorize, (req, res) => {
     })
 })
 
-app.listen(PORT, () => {
-    console.log(`GoCandidIt is live at http://localhost:${PORT}`)
-})
+function startServer() {
+    return new Promise((resolve, reject) => {
+        const server = app.listen(PORT, () => {
+            console.log(`GoCandidIt is live at http://localhost:${PORT}`)
+            // return the port as the single source of truth
+            resolve(PORT)
+        })
+
+        // catch port binding errors
+        server.on('error', (err) => {
+            reject(err)
+        })
+    })
+}
+
+// if running server.js directly instead of electron, start the server
+if (require.main === module) {
+    startServer().catch(console.error)
+}
+
+// export for electron to consume
+module.exports = {startServer, app}
