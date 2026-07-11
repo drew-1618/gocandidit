@@ -22,10 +22,10 @@ if (key.length !== 32) {
     process.exit(1)
 }
 
-
+const GEMINI_MODEL_NAME = process.env.GEMINI_MODEL || "gemini-3-flash-preview" 
 const {GoogleGenerativeAI} = require("@google/generative-ai")
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({model: "gemini-3-flash-preview"})
+const model = genAI.getGenerativeModel({model: GEMINI_MODEL_NAME})
 
 const express = require('express')
 const {v4: uuidv4} = require('uuid')
@@ -532,7 +532,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
             try {
                 const decryptedKey = decrypt(profile.gemini_api_key)
                 const userGenAI = new GoogleGenerativeAI(decryptedKey)
-                activeModel = userGenAI.getGenerativeModel({model: "gemini-3-flash-preview"})
+                activeModel = userGenAI.getGenerativeModel({model: GEMINI_MODEL_NAME})
             } catch (decryptionError) {
                 console.error("Decryption failed, falling back to default key:", decryptionError)
             }
