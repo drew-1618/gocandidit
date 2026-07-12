@@ -289,6 +289,15 @@ async function generateWithRetry(modelInstance, prompt, maxRetries = 3, timeout 
 }
 
 
+// standardize successful API response
+function sendSuccess(res, data = null, message = null, statusCode = 200) {
+    const payload = {success: true}
+    if (data) payload.data = data
+    if (message) payload.message = message
+    return res.status(statusCode).json(payload)
+}
+
+
 // --- REGISTER ROUTE ---
 app.post('/api/register', (req, res) => {
     const {email, password} = req.body
