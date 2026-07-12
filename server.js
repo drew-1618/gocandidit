@@ -470,7 +470,7 @@ app.put('/api/profile', authorize, (req, res) => {
         if (err) {
             res.status(500).json({error: err.message})
         } else {
-            res.status(201).json({message: "Profile updated successfully"})
+            res.status(200).json({message: "Profile updated successfully"})
         }
     })
 })
