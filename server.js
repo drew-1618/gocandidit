@@ -297,6 +297,20 @@ function sendSuccess(res, data = null, message = null, statusCode = 200) {
     return res.status(statusCode).json(payload)
 }
 
+// standardize error API response
+function sendError(res, userMessage, rawError = null, statusCode = 500) {
+    // log the raw error for debugging
+    if (rawError) {
+        console.error(`API Error ${statusCode} ${userMessage}: ${rawError.message || rawError}`)
+    }
+
+    // only send safe message to client
+    return res.status(statusCode).json({
+        success: false,
+        error: userMessage
+    })
+
+}
 
 // --- REGISTER ROUTE ---
 app.post('/api/register', (req, res) => {
