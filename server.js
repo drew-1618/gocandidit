@@ -396,16 +396,15 @@ app.post('/api/jobs', authorize, (req, res) => {
     const jobId = uuidv4()
 
     if (!userId || !company || !role) {
-        return res.status(400).json({error: "Missing required job fields"})
+        return sendError(res, "Missing required job fields", null, 400)
     }
 
     const strQuery = "INSERT INTO tblJobs (id, user_id, company, location, role, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     db.run(strQuery, [jobId, userId, company, location, role, start_date, end_date, description], (err) => {
         if (err) {
-            res.status(500).json({error: err.message})
-        } else {
-            res.status(201).json({message: "Job saved to vault", jobId: jobId})
+            return sendError(res, "Failed to save job", err, 500)
         }
+        return sendSuccess(res, {jobId: jobId}, "Job saved to vault", 201)
     })
 })
 
@@ -414,10 +413,9 @@ app.get('/api/jobs', authorize, (req, res) => {
     const strQuery = "SELECT * FROM tblJobs WHERE user_id = ? ORDER BY end_date DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
-            res.status(500).json({error: err.message})
-        } else {
-            res.status(200).json(rows)
+            return sendError(res, "Failed to retrieve jobs", err, 500)
         }
+        return sendSuccess(res, rows, null, 200)
     })
 })
 
@@ -431,10 +429,9 @@ app.post('/api/education', authorize, (req, res) => {
     const strQuery = "INSERT INTO tblEducation (id, user_id, school_name, degree, major, minor, gpa, location, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     db.run(strQuery, [eduId, userId, school_name, degree, major, minor, gpa, location, start_date, end_date, description], function(err) {
         if (err) {
-            res.status(500).json({error: err.message})
-        } else {
-            res.status(201).json({message: "Education record added", educationId: eduId})
+            return sendError(res, "Failed to save education record", err, 500)
         }
+        return sendSuccess(res, {educationId: eduId}, "Education saved to vault", 201)
     })
 })
 
@@ -443,10 +440,9 @@ app.get('/api/education', authorize, (req, res) => {
     const strQuery = "SELECT * FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
-            res.status(500).json({error: err.message})
-        } else {
-            res.status(200).json(rows)
+            return sendError(res, "Failed to retrieve education records", err, 500)
         }
+        return sendSuccess(res, rows, null, 200)
     })
 })
 
@@ -460,10 +456,9 @@ app.post('/api/projects', authorize, (req, res) => {
     const strQuery = "INSERT INTO tblProjects (id, user_id, title, description, tech_stack, link, proj_date) VALUES (?, ?, ?, ?, ?, ?, ?)"
     db.run(strQuery, [projectId, userId, title, description, tech_stack, link, proj_date], (err) => {
         if (err) {
-            res.status(500).json({error: err.message})
-        } else {
-            res.status(201).json({message: "Project added", projectId: projectId})
+            return sendError(res, "Failed to save project", err, 500)
         }
+        return sendSuccess(res, {projectId: projectId}, "Project saved to vault", 201)
     })
 })
 
@@ -473,10 +468,9 @@ app.get('/api/projects', authorize, (req, res) => {
 
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
-            res.status(500).json({error: err.message})
-        } else {
-            res.status(200).json(rows)
+            return sendError(res, "Failed to retrieve project records", err, 500)
         }
+        return sendSuccess(res, rows, null, 200)
     })
 })
 
@@ -491,10 +485,9 @@ app.put('/api/profile', authorize, (req, res) => {
     const strQuery = "UPDATE tblUsers SET full_name=?, skills=?, phone=?, linkedin_url=?, github_url=?, summary=?, gemini_api_key=? WHERE id = ?"
     db.run(strQuery, [full_name, skills, phone, linkedin_url, github_url, summary, encryptedKey, userId], (err) => {
         if (err) {
-            res.status(500).json({error: err.message})
-        } else {
-            res.status(200).json({message: "Profile updated successfully"})
+            return sendError(res, "Failed to update profile", err, 500)
         }
+        return sendSuccess(res, null, "Profile updated successfully", 201)
     })
 })
 
@@ -503,13 +496,13 @@ app.get('/api/profile', authorize, (req, res) => {
     const strQuery = "SELECT * FROM tblUsers WHERE id = ?"
     db.get(strQuery, [userId], (err, row) => {
         if (err) {
-            res.status(500).json({error: err.message})
+            return sendError(res, "Failed to retrieve profile", err, 500)
         } else {
             if (row && row.gemini_api_key) {
                 // mask from ui
                 row.gemini_api_key = "STORED_ENCRYPTED"
             }
-            res.status(200).json(row || {})
+            return sendSuccess(res, row || {}, null, 200)
         }
     })
 })
@@ -534,11 +527,12 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
     const strQuery = `DELETE FROM ${strTableName} WHERE id = ? and user_id = ?`
     db.run(strQuery, [id, userId], function(err) {
         if (err) {
-            res.status(500).json({error: err.message})
+            return sendError(res, "Failed to delete record", err, 500)
         } else if (this.changes === 0) {
-            res.status(404).json({error: "Record not found"})
+            return sendError(res, "Record not found or does not belong to a user", null, 404)
         } else {
             res.status(200).json({message: "Record deleted successfully"})
+            return sendSuccess(res, null, "Record deleted successfully", 200)
         }
     })
 })
@@ -550,12 +544,12 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
 
     // length guardrails and basic sanitization
     if (!jobDescription || typeof jobDescription !== 'string') {
-        return res.status(400).json({error: "A valid job description is required."})
+        return sendError(res, "A valid job description is required", null, 400)
     }
     // cap the description to 7500 characters
     const MAX_DESC_LENGTH = 7500
     if (jobDescription.length > MAX_DESC_LENGTH) {
-        return res.status(413).json({error: `Job description exceeds the maximum length of ${MAX_DESC_LENGTH} characters.`})
+        return sendError(res, `Job description exceeds the maximum length of ${MAX_DESC_LENGTH} characters.`, null, 413)
     }
 
     // sanitize out any XML tags the user might have included to prevent boundary breaking (type of prompt injection)
@@ -634,7 +628,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
         const text = response.text()
 
         // cleanup response (markdown code blocks that AI typically inserts and unnecessary HTML artifacts)
-        const cleanHtml = text
+        let cleanHtml = text
 
         // globally strip code fences
         cleanHtml = cleanHtml.replace(/```[a-zA-Z]*\n?/g, "").replace(/```/g, "")
@@ -658,17 +652,17 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
             throw new Error("AI_MALFORMED_OUTPUT")
         }
 
-        res.status(200).json({resumeHtml: cleanHtml})
+        sendSuccess(res, {resumeHtml: cleanHtml}, "Resume generated successfully", 200)
         
     } catch (err) {
         console.error("AI API Error: ", err)
         if (err.message.includes("AI_TIMEOUT")) {
-            return res.status(504).json({error: "The AI engine took too long to respond. Please try again."})
+            return sendError(res, "The AI engine took too long to respond. Please try again.", err, 504)
         }
         if (err.message.includes("AI_MALFORMED_OUTPUT")) {
-            return res.status(422).json({error: "The AI response was malformed. Please try again."})
+            return sendError(res, "The AI response was malformed. Please try again.", null, 422)
         }
-        res.status(500).json({error: "Resume generation failed. " + err.message})
+        return sendError(res, "Resume generation failed.", err, 500)
     }
 })
 
@@ -680,9 +674,9 @@ app.post('/api/resumes', authorize, (req, res) => {
     const strQuery = "INSERT INTO tblResumes (id, user_id, job_title, job_description, resume_html) VALUES (?, ?, ?, ?, ?)"
     db.run(strQuery, [resumeId, userId, jobTitle, jobDescription, resumeHtml], (err) => {
         if (err) {
-            return res.status(500).json({error: err.message})
+            return sendError(res, "Failed to save resume.", err, 500)
         }
-        res.status(201).json({message: "Resume saved to history", id: resumeId})
+        return sendSuccess(res, {id: resumeId}, "Resume saved to history", 201)
     })
 })
 
@@ -691,9 +685,9 @@ app.get('/api/resumes', authorize, (req, res) => {
     const strQuery = "SELECT id, job_title, job_description, resume_html, created_at FROM tblResumes WHERE user_id = ? ORDER BY created_at DESC"
     db.all(strQuery, [userId], (err, rows) => {
         if (err) {
-            return res.status(500).json({error: err.message})
+            return sendError(res, "Failed to fetch resumes.", err, 500)
         }
-        res.status(200).json(rows || [])
+        return sendSuccess(res, rows || [], "Resumes fetched successfully", 200)
     })
 })
 
