@@ -72,7 +72,7 @@ async function generateResume() {
 
         if (response.ok) {
             const outputDiv = document.getElementById('resume-output')
-            outputDiv.innerHTML = data.resumeHtml
+            outputDiv.innerHTML = data.data.resumeHtml
             outputDiv.style.display = 'block'
 
             // let user know AI finished
@@ -133,16 +133,17 @@ async function fetchVaultData(strCategory, strContainerId) {
         const response = await fetch(`/api/${strCategory}`, {
             headers: {'x-session-id': sessionId}
         })
-        const data = await response.json()
+        const jsonResponse = await response.json()
+        const vaultItems = jsonResponse.data || []
 
-        if (data.length === 0) {
+        if (vaultItems.length === 0) {
             container.innerHTML = `<p class="text-muted italic"/><i class="fas fa-folder-open text-muted"></i> No records found in your vault.</p>`
             return
         }
 
         // build list of cards
         let html = '<div class="list-group">'
-        data.forEach(item => {
+        vaultItems.forEach(item => {
             if (strCategory === 'jobs') {
                 html += `
                     <div class="list-group-item list-group-item-action p-3 mb-2 shadow-sm border rounded">
@@ -337,16 +338,17 @@ function switchTab(tab) {
             })
             .then (res => res.json())
             .then (data => {
-                if (data) {
-                    document.getElementById('profFullName').value = data.full_name || ''
-                    document.getElementById('profPhone').value = data.phone || ''
-                    document.getElementById('profLinkedIn').value = data.linkedin_url || ''
-                    document.getElementById('profGitHub').value = data.github_url || ''
-                    document.getElementById('profSkills').value = data.skills || ''
+                if (data && data.success && data.data) {
+                    const profile = data.data
+                    document.getElementById('profFullName').value = profile.full_name || ''
+                    document.getElementById('profPhone').value = profile.phone || ''
+                    document.getElementById('profLinkedIn').value = profile.linkedin_url || ''
+                    document.getElementById('profGitHub').value = profile.github_url || ''
+                    document.getElementById('profSkills').value = profile.skills || ''
                     // show masked value if user's key is stored
-                    document.getElementById('profApiKey').value = data.gemini_api_key === "STORED_ENCRYPTED" ? "***************************************" : ""
-                    if (data.summary) {
-                        quill.root.innerHTML = data.summary
+                    document.getElementById('profApiKey').value = profile.gemini_api_key === "STORED_ENCRYPTED" ? "***************************************" : ""
+                    if (profile.summary) {
+                        quill.root.innerHTML = profile.summary
                     }
 
                 }
@@ -453,15 +455,17 @@ function switchTab(tab) {
         // convert to lower case for consistency
         fetch('/api/resumes', {headers: {'x-session-id': sessionId}})
         .then(res => res.json())
-        .then(data => {
-            if (Array.isArray(data)) {
-            arrExistingResumeNames = data.map(resume => {
+        .then(response => {
+            const resumes = response.data || []
+            if (Array.isArray(resumes)) {
+            arrExistingResumeNames = resumes.map(resume => {
                 const title = resume.job_title
                 return title ? title.toLowerCase() : ""
-
             })
-
             }
+        })
+        .catch(err => {
+            console.error("Failed to fetch existing resume names: ", err)
         })
     } else if (currentTab === 'resumes') {
         title.innerText = "Resume History"
