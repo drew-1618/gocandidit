@@ -840,9 +840,9 @@ async function handleAuth() {
         const data = await response.json()
 
         if (response.ok) {
-            if (data.sessionId) {
+            if (data.success && data.data && data.data.sessionId) {
                 // save sessionId to localStorage
-                localStorage.setItem('sessionId', data.sessionId)
+                localStorage.setItem('sessionId', data.data.sessionId)
                 
                 // show quick success before transitioning view
                 const Toast = Swal.mixin({
