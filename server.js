@@ -238,12 +238,12 @@ function authorize(req, res, next) {
     // look for the sessionId in the headers
     const sessionId = req.headers['x-session-id']
     if (!sessionId) {
-        return res.status(401).json({error: "No session found. Please log in"})
+        return sendError(res, "No session found. Please log in", null, 401)
     }
     const strQuery = "SELECT user_id FROM tblSessions WHERE session_id = ? AND created_at > datetime('now', '-12 hours')"
     db.get(strQuery, [sessionId], (err, row) => {
         if (err || !row) {
-            res.status(401).json({error: "Invalid or expired session"})
+            return sendError(res, "Invalid or expired session", null, 401)
         } else {
             req.userId = row.user_id
             next()
@@ -322,10 +322,9 @@ app.post('/api/register', (req, res) => {
         db.run(strQuery, [userId, email, strHashedPassword], function(err) {
             if (err) {
                 if (err.message.includes("UNIQUE constraint failed")) {
-                    return res.status(400).json({error: "An account is already registered with that email"})
+                    return sendError(res, "An account is already registered with that email", err, 400)
                 }
-                return res.status(400).json({error: err.message})
-                
+                return sendError(res, "Failed to register user", err, 400)
             }
 
             // create a session immediately after registration
@@ -333,13 +332,13 @@ app.post('/api/register', (req, res) => {
             const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
             db.run(strSessionQuery, [strSessionId, userId], (sessionErr) => {
                 if (sessionErr) {
-                    return res.status(500).json({error: "User registered, but session creation failed"})
+                    return sendError(res, "User registered, but session creation failed", sessionErr, 500)
                 }
-                res.status(201).json({message: "User registered and logged in", userId: userId, sessionId: strSessionId})
+                return sendSuccess(res, {userId: userId, sessionId: strSessionId}, "User registered and logged in", 201)
             })            
         })
     } catch(err) {
-        res.status(500).json({error: err.message})
+        return sendError(res, "Failed to register user", err, 500)
     }
 })
 
@@ -350,25 +349,25 @@ app.post('/api/login', (req, res) => {
     const strQuery = "SELECT * FROM tblUsers WHERE email = ?"
     db.get(strQuery, [email], (err, user) => {
         if (err) {
-            return res.status(500).json({error: "Database error"})
+            return sendError(res, "Database error during login", err, 500)
         } 
         if (!user) {
-            return res.status(401).json({error: "Invalid email or password"})
+            return sendError(res, "Invalid email or password", null, 401)
         }
 
         // check password
         const boolValidPassword = bcrypt.compareSync(password, user.password_hash)
         if (!boolValidPassword) {
-            res.status(401).json({error: "Invalid email or password"})
+            return sendError(res, "Invalid email or password", null, 401)
         } else {
             // success
             const strSessionId = uuidv4()
             const strSessionQuery = "INSERT INTO tblSessions (session_id, user_id) VALUES (?, ?)"
             db.run(strSessionQuery, [strSessionId, user.id], (err) => {
                 if (err) {
-                    res.status(500).json({error: err.message})
+                    return sendError(res, "Failed to create session", err, 500)
                 } else {
-                    res.status(201).json({message: "Login successful", sessionId: strSessionId})
+                    return sendSuccess(res, {sessionId: strSessionId}, "Login successful", 201)
                 }
             })
         }
@@ -382,9 +381,9 @@ app.delete('/api/logout', authorize, (req, res) => {
     const strQuery = "DELETE FROM tblSessions WHERE session_id = ?"
     db.run(strQuery, [sessionId], (err) => {
         if (err) {
-            return res.status(500).json({error: err.message})
+            return sendError(res, "Failed to logout", err, 500)
         }
-        res.status(200).json({message: "Successfully logged out"})
+        return sendSuccess(res, null, "Successfully logged out", 200)
     })
 })
 
@@ -538,7 +537,7 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
 
     const strTableName = objTableMap[category]
     if (!strTableName) {
-        return res.status(400).json({error: "Invalid category"})
+        return sendError(res, "Invalid category", null, 400)
     }
 
     const strQuery = `DELETE FROM ${strTableName} WHERE id = ? and user_id = ?`
@@ -548,7 +547,6 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
         } else if (this.changes === 0) {
             return sendError(res, "Record not found or does not belong to a user", null, 404)
         } else {
-            res.status(200).json({message: "Record deleted successfully"})
             return sendSuccess(res, null, "Record deleted successfully", 200)
         }
     })
