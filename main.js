@@ -67,7 +67,7 @@ if (!gotTheLock) {
     let isQuitting = false
 
     // intercept quit event to close db before quitting
-    app.on('before-quit', (event) => {
+    app.on('before-quit', async (event) => {
         if (!isQuitting) {
             // prevent default quit behavior
             event.preventDefault()
