@@ -479,6 +479,23 @@ app.get('/api/projects', authorize, (req, res) => {
 app.put('/api/profile', authorize, (req, res) => {
     const userId = req.userId
     const {full_name, skills, phone, linkedin_url, github_url, summary, gemini_api_key} = req.body
+
+    // if user provided a new key (not empty and not filled with asterisks)
+    if (gemini_api_key && /^\*+$/.test(gemini_api_key)) {
+        const encryptedKey = encrypt(gemini_api_key)
+        const strQuery = "UPDATE tblUsers SET full_name=?, skills=?, phone=?, linkedin_url=?, github_url=?, summary=?, gemini_api_key=? WHERE id = ?"
+        db.run(strQuery, [full_name, skills, phone, linkedin_url, github_url, summary, encryptedKey, userId], (err) => {
+            if (err) return sendError(res, "Failed to update profile with new API key", err, 500)
+            sendSuccess(res, null, "Profile and API key updated successfully", 200)
+        })
+    } else {
+        // if the key field was left blank or just contained the asterisks, ignore the column entirely
+        const strQuery = "UPDATE tblUsers SET full_name=?, skills=?, phone=?, linkedin_url=?, github_url=?, summary=? WHERE id = ?"
+        db.run(strQuery, [full_name, skills, phone, linkedin_url, github_url, summary, userId], (err) => {
+            if (err) return sendError(res, "Failed to update profile", err, 500)
+            sendSuccess(res, null, "Profile updated successfully", 200)
+        })
+    }
     // only encrypt if an api key is given
     const encryptedKey = gemini_api_key ? encrypt(gemini_api_key) : null
 
