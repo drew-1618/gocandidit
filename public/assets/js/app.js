@@ -547,8 +547,8 @@ async function previewResume(id) {
         const response = await fetch('/api/resumes', {
             headers: { 'x-session-id': sessionId }
         })
-        const data = await response.json()
-        const resume = data.find(r => r.id === id)
+        const resumeData = await response.json()
+        const resume = resumeData.data.find(r => r.id === id)
 
         if (resume) {
             // Create a temporary "Paper" overlay
