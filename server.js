@@ -555,7 +555,7 @@ app.delete('/api/:category/:id', authorize, (req,res) => {
 
 app.post('/api/generate-resume', authorize, async (req, res) => {
     const userId = req.userId
-    const {jobDescription} = req.body
+    let {jobDescription} = req.body
 
     // length guardrails and basic sanitization
     if (!jobDescription || typeof jobDescription !== 'string') {
@@ -572,7 +572,7 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
 
     try {
         // get profile with encrypted api key
-        const profile = await new Promise((res, rej) => db.get("SELECT email, skills, phone, linkedin_url, summary, github_url, full_name, gemini_api_key FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? rej(e) : res(r)))
+        const profile = await new Promise((resolve, reject) => db.get("SELECT email, skills, phone, linkedin_url, summary, github_url, full_name, gemini_api_key FROM tblUsers WHERE id = ?", [userId], (e, r) => e ? reject(e) : resolve(r)))
         // default to model from .env
         let activeModel = model
 
@@ -593,9 +593,9 @@ app.post('/api/generate-resume', authorize, async (req, res) => {
         // get all data from db
         // for tblUsers, don't get bcrypted passwords. AI does not need that
         // call res(r) if it successfully got the data, otherwise call rej(e) to show something went wrong
-        const jobs = await new Promise((res, rej) => db.all("SELECT company, role, location, start_date, end_date, description FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
-        const education = await new Promise((res, rej) => db.all("SELECT school_name, degree, major, minor, gpa, location, start_date, end_date FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
-        const projects = await new Promise((res, rej) => db.all("SELECT title, description, tech_stack, link, proj_date FROM tblProjects WHERE user_id = ? ORDER BY proj_date DESC", [userId], (e, r) => e ? rej(e) : res(r)));
+        const jobs = await new Promise((resolve, reject) => db.all("SELECT company, role, location, start_date, end_date, description FROM tblJobs WHERE user_id = ? ORDER BY start_date DESC", [userId], (e, r) => e ? reject(e) : resolve(r)));
+        const education = await new Promise((resolve, reject) => db.all("SELECT school_name, degree, major, minor, gpa, location, start_date, end_date FROM tblEducation WHERE user_id = ? ORDER BY end_date DESC", [userId], (e, r) => e ? reject(e) : resolve(r)));
+        const projects = await new Promise((resolve, reject) => db.all("SELECT title, description, tech_stack, link, proj_date FROM tblProjects WHERE user_id = ? ORDER BY proj_date DESC", [userId], (e, r) => e ? reject(e) : resolve(r)));
     
         // format into a more readable string for AI to reduce errors
         const formatExperience = (arr) => arr.map(item => `
