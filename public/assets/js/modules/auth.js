@@ -2,21 +2,29 @@
  * auth.js - Authentication and SPA access state management module
  */
 
-import { fetchConfig, loginApi, registerApi, logoutApi } from './api.js'
+import { fetchConfig, loginApi, registerApi, logoutApi, getSingleUserMode } from './api.js'
 
 let isLoginMode = true
 
 export function updateUI() {
     const sessionId = localStorage.getItem('sessionId')
+    const isSingleUser = getSingleUserMode()
+
     const authSection = document.getElementById('section-auth')
     const vaultSection = document.getElementById('section-vault')
     const logoutBtn = document.getElementById('btnLogout')
     const navButtons = document.querySelectorAll('.navbar .btn-outline')
 
-    if (sessionId) {
+    if (sessionId || isSingleUser) {
         if (authSection) authSection.classList.add('d-none')
         if (vaultSection) vaultSection.classList.remove('d-none')
-        if (logoutBtn) logoutBtn.classList.remove('d-none')
+        if (logoutBtn) {
+            if (isSingleUser) {
+                logoutBtn.classList.add('d-none')
+            } else {
+                logoutBtn.classList.remove('d-none')
+            }
+        }
         navButtons.forEach(btn => btn.classList.remove('d-none'))
     } else {
         if (authSection) authSection.classList.remove('d-none')
@@ -28,7 +36,9 @@ export function updateUI() {
 
 export function goHome() {
     const sessionId = localStorage.getItem('sessionId')
-    if (!sessionId) {
+    const isSingleUser = getSingleUserMode()
+
+    if (!sessionId && !isSingleUser) {
         updateUI()
         return
     }
@@ -109,7 +119,7 @@ export async function handleAuth() {
         const res = isLoginMode ? await loginApi(email, password) : await registerApi(email, password)
         const data = res.data
 
-        if (res.ok && data && data.success && data.data && data.data.sessionId) {
+        if (data && data.success && data.data && data.data.sessionId) {
             localStorage.setItem('sessionId', data.data.sessionId)
             const Toast = Swal.mixin({
                 toast: true,
@@ -124,20 +134,13 @@ export async function handleAuth() {
             })
             updateUI()
             goHome()
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: isLoginMode ? 'Login Failed' : 'Registration Failed',
-                text: (data && data.error) || 'Please check your credentials and try again.',
-                confirmButtonColor: '#22ba9c'
-            })
         }
     } catch (err) {
         console.error("Authentication failed:", err)
         Swal.fire({
             icon: 'error',
-            title: 'Connection Error',
-            text: 'Unable to reach the server. Please check your internet connection.',
+            title: isLoginMode ? 'Login Failed' : 'Registration Failed',
+            text: err.message || 'Please check your credentials and try again.',
             confirmButtonColor: '#22ba9c'
         })
     }
@@ -172,7 +175,8 @@ export async function logout() {
 export async function checkAppConfig() {
     try {
         const res = await fetchConfig()
-        if (res.ok && res.data && res.data.singleUserMode) {
+        const isSingleUser = res.data && res.data.singleUserMode === true
+        if (isSingleUser) {
             const authSection = document.getElementById('section-auth')
             if (authSection) {
                 authSection.classList.add('d-none')
@@ -181,8 +185,14 @@ export async function checkAppConfig() {
             if (toggleBtn) {
                 toggleBtn.classList.add('d-none')
             }
+            const logoutBtn = document.getElementById('btnLogout')
+            if (logoutBtn) {
+                logoutBtn.classList.add('d-none')
+            }
         }
+        return isSingleUser
     } catch (err) {
         console.error("Failed to check app config:", err)
+        return false
     }
 }

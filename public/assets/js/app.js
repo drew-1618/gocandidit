@@ -4,7 +4,7 @@
 
 import { fetchProfileApi } from './modules/api.js'
 import { updateUI, goHome, toggleAuthMode, handleAuth, logout, checkAppConfig } from './modules/auth.js'
-import { switchTab, fetchVaultData, deleteVaultItem, togglePresent, previewCurrentDraft, previewResume, convertDateToReadable, saveToVault } from './modules/resumeEditor.js'
+import { initQuill, switchTab, fetchVaultData, deleteVaultItem, togglePresent, previewCurrentDraft, previewResume, convertDateToReadable, saveToVault } from './modules/resumeEditor.js'
 import { generateResume, editResumeDraft } from './modules/aiHelper.js'
 
 // Bind functions to window so existing inline HTML event attributes (onclick, onchange) work seamlessly
@@ -31,9 +31,34 @@ document.addEventListener('input', (event) => {
 
 // Initialize application state on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check initial configuration (e.g. singleUserMode)
-    await checkAppConfig()
+    // 1. Initialize scoped Quill instance
+    initQuill()
 
+    // 2. Listen for global unauthorized events to reset UI
+    window.addEventListener('auth:unauthorized', () => {
+        updateUI()
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        })
+        Toast.fire({
+            icon: 'info',
+            title: 'Session expired. Please log in again.'
+        })
+    })
+
+    // 3. Check initial configuration (singleUserMode check)
+    const isSingleUser = await checkAppConfig()
+    if (isSingleUser) {
+        // Single-user fallback: bypass session token validation and load workspace UI directly
+        updateUI()
+        goHome()
+        return
+    }
+
+    // 4. Session validation for multi-user mode
     const sessionId = localStorage.getItem('sessionId')
     if (sessionId) {
         try {
@@ -41,21 +66,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (response.ok) {
                 updateUI()
                 goHome()
-            } else {
-                // Session expired or invalid
-                localStorage.removeItem('sessionId')
-                updateUI()
-
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                })
-                Toast.fire({
-                    icon: 'info',
-                    title: 'Session expired. Please log in again.'
-                })
             }
         } catch (err) {
             console.error("Auto-login failed: ", err)

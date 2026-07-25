@@ -2,10 +2,44 @@
  * resumeEditor.js - Resume editor, dynamic forms, vault data management, and draft previews
  */
 
-import { fetchVaultDataApi, deleteVaultItemApi, fetchProfileApi, saveVaultItemApi, fetchResumesApi } from './api.js'
+import { fetchVaultDataApi, deleteVaultItemApi, fetchProfileApi, saveVaultItemApi, fetchResumesApi, getSingleUserMode } from './api.js'
 import { updateUI } from './auth.js'
 
-export const quill = new Quill('#editor', { theme: 'snow' })
+let quill = null
+
+export function initQuill() {
+    if (!quill) {
+        const container = document.getElementById('editor')
+        if (container && window.Quill) {
+            quill = new Quill('#editor', { theme: 'snow' })
+        }
+    }
+    return quill
+}
+
+export function getQuill() {
+    return quill
+}
+
+export function getQuillContent() {
+    return quill ? quill.root.innerHTML : ''
+}
+
+export function setQuillContent(html) {
+    if (quill) {
+        if (!html) {
+            quill.setContents([])
+        } else {
+            quill.root.innerHTML = html
+        }
+    }
+}
+
+export function pasteQuillHtml(html) {
+    if (quill) {
+        quill.clipboard.dangerouslyPasteHTML(html)
+    }
+}
 
 export let currentTab = 'jobs'
 export let arrExistingResumeNames = []
@@ -143,7 +177,7 @@ export async function fetchVaultData(strCategory, strContainerId) {
         container.innerHTML = html
     } catch (err) {
         console.error(`Failed to fetch ${strCategory}: `, err)
-        container.innerHTML = `<p class="text-danger">Error loading vault data.</p>`
+        container.innerHTML = `<p class="text-danger">Error loading vault data: ${err.message}</p>`
     }
 }
 
@@ -160,22 +194,19 @@ export async function deleteVaultItem(category, id) {
     .then(async (result) => {
         if (result.isConfirmed) {
             try {
-                const response = await deleteVaultItemApi(category, id)
-                if (response.ok) {
-                    Swal.fire({
-                        title: 'Deleted',
-                        text: 'The item has been deleted.',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    })
-                    const strContainerId = `vault-list-${category}`
-                    fetchVaultData(category, strContainerId)
-                } else {
-                    Swal.fire('Error', response.data?.error || 'Failed to delete item', 'error')
-                }
+                await deleteVaultItemApi(category, id)
+                Swal.fire({
+                    title: 'Deleted',
+                    text: 'The item has been deleted.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                })
+                const strContainerId = `vault-list-${category}`
+                fetchVaultData(category, strContainerId)
             } catch (err) {
                 console.error("Delete failed: ", err)
+                Swal.fire('Error', err.message || 'Failed to delete item', 'error')
             }
         }
     })
@@ -185,7 +216,7 @@ export function previewCurrentDraft() {
     const outputDiv = document.getElementById('resume-output')
     const htmlContent = outputDiv && outputDiv.style.display !== 'none' && outputDiv.innerHTML.trim()
         ? outputDiv.innerHTML
-        : quill.root.innerHTML
+        : getQuillContent()
 
     if (!htmlContent || htmlContent.trim() === '' || htmlContent === '<p><br></p>') {
         Swal.fire({
@@ -258,7 +289,9 @@ export async function previewResume(id) {
 
 export function switchTab(tab) {
     const sessionId = localStorage.getItem('sessionId')
-    if (!sessionId) {
+    const isSingleUser = getSingleUserMode()
+
+    if (!sessionId && !isSingleUser) {
         Swal.fire({
             icon: 'error',
             title: 'Access Denied',
@@ -286,7 +319,7 @@ export function switchTab(tab) {
     if (divActions) divActions.innerHTML = ''
     if (saveBtn) saveBtn.classList.remove('d-none')
 
-    quill.setContents([])
+    setQuillContent('')
 
     if (tab === 'profile') {
         if (title) title.innerText = "Update Personal Information"
@@ -320,7 +353,7 @@ export function switchTab(tab) {
                         document.getElementById('profApiKey').value = profile.gemini_api_key === "STORED_ENCRYPTED" ? "***************************************" : ""
                     }
                     if (profile.summary) {
-                        quill.root.innerHTML = profile.summary
+                        setQuillContent(profile.summary)
                     }
                 }
             })
@@ -428,7 +461,7 @@ export function switchTab(tab) {
             `
         }
         if (editorLabel) editorLabel.innerText = "AI-Generated Draft (Review & Edit)"
-        quill.setContents([])
+        setQuillContent('')
         if (divQuill) divQuill.classList.add('d-none')
 
         arrExistingResumeNames = []
@@ -469,7 +502,9 @@ export function switchTab(tab) {
 
 export async function saveToVault() {
     const sessionId = localStorage.getItem('sessionId')
-    if (!sessionId) return;
+    const isSingleUser = getSingleUserMode()
+
+    if (!sessionId && !isSingleUser) return;
 
     const Toast = Swal.mixin({
         toast: true,
@@ -482,7 +517,7 @@ export async function saveToVault() {
     let objPayload = {}
     let strEndpoint = ''
     let arrRequiredFields = []
-    const description = quill.root.innerHTML
+    const description = getQuillContent()
 
     if (currentTab === 'jobs') {
         strEndpoint = '/api/jobs'
@@ -581,33 +616,26 @@ export async function saveToVault() {
 
     try {
         const method = (currentTab === 'profile') ? 'PUT' : 'POST'
-        const response = await saveVaultItemApi(strEndpoint, method, objPayload)
+        await saveVaultItemApi(strEndpoint, method, objPayload)
 
-        if (response.ok) {
-            Toast.fire({
-                icon: 'success',
-                title: `${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)} saved`
-            })
+        Toast.fire({
+            icon: 'success',
+            title: `${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)} saved`
+        })
 
-            if (currentTab !== 'profile') {
-                quill.setContents([])
-                document.querySelectorAll('#divDynamicFormFields input').forEach(input => input.value = '')
-                const inputSaveTitle = document.getElementById('saveJobTitle')
-                if (inputSaveTitle) inputSaveTitle.value = ''
+        if (currentTab !== 'profile') {
+            setQuillContent('')
+            document.querySelectorAll('#divDynamicFormFields input').forEach(input => input.value = '')
+            const inputSaveTitle = document.getElementById('saveJobTitle')
+            if (inputSaveTitle) inputSaveTitle.value = ''
 
-                const containerId = `vault-list-${currentTab}`
-                if (document.getElementById(containerId)) {
-                    fetchVaultData(currentTab, containerId)
-                }
+            const containerId = `vault-list-${currentTab}`
+            if (document.getElementById(containerId)) {
+                fetchVaultData(currentTab, containerId)
             }
-        } else {
-            Swal.fire('Error Saving', response.data?.error || 'Failed to save item', 'error')
         }
     } catch (err) {
         console.error("Vault save failed: ", err)
-        Toast.fire({
-            icon: 'error',
-            title: `${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)} failed to save`
-        })
+        Swal.fire('Error Saving', err.message || 'Failed to save item', 'error')
     }
 }

@@ -3,7 +3,7 @@
  */
 
 import { generateResumeApi } from './api.js'
-import { quill } from './resumeEditor.js'
+import { setQuillContent, pasteQuillHtml } from './resumeEditor.js'
 
 export async function generateResume() {
     const jobDescInput = document.getElementById('jobTargetDesc')
@@ -21,13 +21,13 @@ export async function generateResume() {
     }
 
     if (divLoading) divLoading.classList.remove('d-none')
-    if (quill) quill.setContents([])
+    setQuillContent('')
 
     try {
         const response = await generateResumeApi(strJobDesc)
         const data = response.data
 
-        if (response.ok && data && data.data && data.data.resumeHtml) {
+        if (data && data.data && data.data.resumeHtml) {
             const outputDiv = document.getElementById('resume-output')
             if (outputDiv) {
                 outputDiv.innerHTML = data.data.resumeHtml
@@ -45,20 +45,13 @@ export async function generateResume() {
                 icon: 'success',
                 title: 'Resume tailored successfully'
             })
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Generation Failed',
-                text: (data && data.error) || 'Failed to generate resume.',
-                confirmButtonColor: '#22ba9c'
-            })
         }
     } catch (err) {
         console.error("AI Generation Error: ", err)
         Swal.fire({
             icon: 'error',
-            title: 'System Error',
-            text: 'Could not connect to the AI service. Please check your connection.',
+            title: 'Generation Failed',
+            text: err.message || 'Could not connect to the AI service. Please check your connection.',
             confirmButtonColor: '#22ba9c'
         })
     } finally {
@@ -70,8 +63,8 @@ export function editResumeDraft() {
     const outputDiv = document.getElementById('resume-output')
     const divQuill = document.getElementById('divQuill')
 
-    if (outputDiv && quill) {
-        quill.clipboard.dangerouslyPasteHTML(outputDiv.innerHTML)
+    if (outputDiv) {
+        pasteQuillHtml(outputDiv.innerHTML)
         outputDiv.style.display = 'none'
     }
     if (divQuill) {
