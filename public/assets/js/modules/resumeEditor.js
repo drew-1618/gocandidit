@@ -327,14 +327,14 @@ export function switchTab(tab) {
         if (formContainer) {
             formContainer.innerHTML = `
                 <div class="row g-3">
-                    <div class="col-md-12"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" id="profFullName" class="form-control" placeholder="First Last"><div class="invalid-feedback">Please enter your full name.</div></div>
-                    <div class="col-md-6"><label class="form-label">Phone Number <span class="text-danger">*</span></label><input type="tel" id="profPhone" class="form-control" placeholder="(000) 000-0000"><div class="invalid-feedback">Please enter your phone number.</div></div>
-                    <div class="col-md-6"><label class="form-label">LinkedIn URL</label><input type="url" id="profLinkedIn" class="form-control" placeholder="https://linkedin.com/in/..."></div>
-                    <div class="col-md-6"><label class="form-label">GitHub URL</label><input type="url" id="profGitHub" class="form-control" placeholder="https://github.com/..."></div>
-                    <div class="col-md-6"><label class="form-label">Professional Skills</label><input type="text" id="profSkills" class="form-control" placeholder="Python, Node.js, C++"></div>
+                    <div class="col-md-12"><label class="form-label" for="profFullName">Full Name <span class="text-danger">*</span></label><input type="text" id="profFullName" name="profFullName" autocomplete="name" class="form-control" placeholder="First Last"><div class="invalid-feedback">Please enter your full name.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="profPhone">Phone Number <span class="text-danger">*</span></label><input type="tel" id="profPhone" name="profPhone" autocomplete="tel" class="form-control" placeholder="(000) 000-0000"><div class="invalid-feedback">Please enter your phone number.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="profLinkedIn">LinkedIn URL</label><input type="url" id="profLinkedIn" name="profLinkedIn" autocomplete="url" class="form-control" placeholder="https://linkedin.com/in/..."></div>
+                    <div class="col-md-6"><label class="form-label" for="profGitHub">GitHub URL</label><input type="url" id="profGitHub" name="profGitHub" autocomplete="url" class="form-control" placeholder="https://github.com/..."></div>
+                    <div class="col-md-6"><label class="form-label" for="profSkills">Professional Skills</label><input type="text" id="profSkills" name="profSkills" class="form-control" placeholder="Python, Node.js, C++"></div>
                     <div class="col-md-12">
-                        <label class="form-label">Custom Gemini API Key (Optional)</label>
-                        <input type="password" id="profApiKey" class="form-control" placeholder="Paste your key here">
+                        <label class="form-label" for="profApiKey">Custom Gemini API Key (Optional)</label>
+                        <input type="password" id="profApiKey" name="profApiKey" autocomplete="off" class="form-control" placeholder="Paste your key here">
                         <small class="text-muted">Your key is encrypted before being saved to the vault.</small>
                     </div>
                 </div>`
@@ -367,11 +367,11 @@ export function switchTab(tab) {
                 <div id="vault-list-jobs" class="mb-4"></div> <hr>
                 <h5 class="mb-3">Add New Experience</h5>
                 <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Company <span class="text-danger">*</span></label><input type="text" id="jobCompany" class="form-control" placeholder="e.g. Google"><div class="invalid-feedback">Please enter the company name.</div></div>
-                    <div class="col-md-6"><label class="form-label">Location <span class="text-danger">*</span></label><input type="text" id="jobLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the company location.</div></div>
-                    <div class="col-md-6"><label class="form-label">Role <span class="text-danger">*</span></label><input type="text" id="jobRole" class="form-control" placeholder="e.g. Software Engineer"><div class="invalid-feedback">Please enter the job title.</div></div>
-                    <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="month" id="jobStartDate" class="form-control"><div class="invalid-feedback">Please enter the start date.</div></div>
-                    <div class="col-md-6"><label class="form-label">End Date (or Present) <span class="text-danger">*</span></label><input type="month" id="jobEndDate" class="form-control"><div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="chkJobPresent" onchange="togglePresent(this, 'jobEndDate')"><label class="form-check-label" for="chkJobPresent">I currently work here</label></div><div class="invalid-feedback">Please enter the end date or Present.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="jobCompany">Company <span class="text-danger">*</span></label><input type="text" id="jobCompany" name="jobCompany" class="form-control" placeholder="e.g. Google"><div class="invalid-feedback">Please enter the company name.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="jobLocation">Location <span class="text-danger">*</span></label><input type="text" id="jobLocation" name="jobLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the company location.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="jobRole">Role <span class="text-danger">*</span></label><input type="text" id="jobRole" name="jobRole" class="form-control" placeholder="e.g. Software Engineer"><div class="invalid-feedback">Please enter the job title.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="jobStartDate">Start Date <span class="text-danger">*</span></label><input type="month" id="jobStartDate" name="jobStartDate" class="form-control"><div class="invalid-feedback">Please enter the start date.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="jobEndDate">End Date (or Present) <span class="text-danger">*</span></label><input type="month" id="jobEndDate" name="jobEndDate" class="form-control"><div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="chkJobPresent" name="chkJobPresent" onchange="togglePresent(this, 'jobEndDate')"><label class="form-check-label" for="chkJobPresent">I currently work here</label></div><div class="invalid-feedback">Please enter the end date or Present.</div></div>
                 </div>`
         }
         fetchVaultData('jobs', 'vault-list-jobs')
@@ -384,10 +384,10 @@ export function switchTab(tab) {
                 <div id="vault-list-education" class="mb-4"></div> <hr>
                 <h5 class="mb-3">Add New Education</h5>
                 <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">School <span class="text-danger">*</span></label><input type="text" id="eduSchool" class="form-control" placeholder="University Name"><div class="invalid-feedback">Please enter the university name.</div></div>
-                    <div class="col-md-6"><label class="form-label">Location <span class="text-danger">*</span></label><input type="text" id="eduLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the university location.</div></div>
-                    <div class="col-md-6"><label class="form-label">Degree Type <span class="text-danger">*</span></label>
-                        <select id="eduDegree" class="form-select">
+                    <div class="col-md-6"><label class="form-label" for="eduSchool">School <span class="text-danger">*</span></label><input type="text" id="eduSchool" name="eduSchool" class="form-control" placeholder="University Name"><div class="invalid-feedback">Please enter the university name.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="eduLocation">Location <span class="text-danger">*</span></label><input type="text" id="eduLocation" name="eduLocation" class="form-control" placeholder="City, State"><div class="invalid-feedback">Please enter the university location.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="eduDegree">Degree Type <span class="text-danger">*</span></label>
+                        <select id="eduDegree" name="eduDegree" class="form-select">
                             <option value="" selected disabled hidden>-- Select --</option>
                             <option value="B.S.">Bachelor of Science (B.S.)</option>
                             <option value="B.A.">Bachelor of Arts (B.A.)</option>
@@ -399,11 +399,11 @@ export function switchTab(tab) {
                         </select>
                         <div class="invalid-feedback">Please enter the degree type.</div>
                     </div>
-                    <div class="col-md-6"><label class="form-label">Major <span class="text-danger">*</span></label><input type="text" id="eduMajor" class="form-control" placeholder="e.g. Computer Science"><div class="invalid-feedback">Please enter the major.</div></div>
-                    <div class="col-md-6"><label class="form-label">Minor</label><input type="text" id="eduMinor" class="form-control" placeholder="e.g. Mathematics"></div>
-                    <div class="col-md-6"><label class="form-label">Start Date <span class="text-danger">*</span></label><input type="month" id="eduStartDate" class="form-control"><div class="invalid-feedback">Please enter the start date.</div></div>
-                    <div class="col-md-6"><label class="form-label">End Date (or Expected) <span class="text-danger">*</span></label><input type="month" id="eduEndDate" class="form-control"><div class="invalid-feedback">Please enter the end date / expected graduation.</div></div>
-                    <div class="col-md-6"><label class="form-label">GPA</label><input type="text" id="eduGpa" class="form-control" placeholder="0.00"></div>
+                    <div class="col-md-6"><label class="form-label" for="eduMajor">Major <span class="text-danger">*</span></label><input type="text" id="eduMajor" name="eduMajor" class="form-control" placeholder="e.g. Computer Science"><div class="invalid-feedback">Please enter the major.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="eduMinor">Minor</label><input type="text" id="eduMinor" name="eduMinor" class="form-control" placeholder="e.g. Mathematics"></div>
+                    <div class="col-md-6"><label class="form-label" for="eduStartDate">Start Date <span class="text-danger">*</span></label><input type="month" id="eduStartDate" name="eduStartDate" class="form-control"><div class="invalid-feedback">Please enter the start date.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="eduEndDate">End Date (or Expected) <span class="text-danger">*</span></label><input type="month" id="eduEndDate" name="eduEndDate" class="form-control"><div class="invalid-feedback">Please enter the end date / expected graduation.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="eduGpa">GPA</label><input type="text" id="eduGpa" name="eduGpa" class="form-control" placeholder="0.00"></div>
                 </div>`
         }
         fetchVaultData('education', 'vault-list-education')
@@ -416,10 +416,10 @@ export function switchTab(tab) {
                 <div id="vault-list-projects" class="mb-4"></div> <hr>
                 <h5 class="mb-3">Add New Project</h5>
                 <div class="row g-3">
-                    <div class="col-md-12"><label class="form-label">Project Title <span class="text-danger">*</span></label><input type="text" id="projTitle" class="form-control" placeholder="Project Name"><div class="invalid-feedback">Please enter the project title.</div></div>
-                    <div class="col-md-6"><label class="form-label">Tech Stack <span class="text-danger">*</span></label><input type="text" id="projStack" class="form-control" placeholder="e.g., Node.js, ChartJS, SQLite"><div class="invalid-feedback">Please enter the tech stack.</div></div>
-                    <div class="col-md-6"><label class="form-label">GitHub/Demo Link</label><input type="text" id="projLink" class="form-control" placeholder="https://github.com/..."></div>
-                    <div class="col-md-6"><label class="form-label">Completion <span class="text-danger">*</span></label><input type="month" id="projCompletionDate" class="form-control"><div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="chkProjectPresent" onchange="togglePresent(this, 'projCompletionDate')"><label class="form-check-label" for="chkProjectPresent">This project is in progress</label></div><div class="invalid-feedback">Please enter the completion date.</div></div>
+                    <div class="col-md-12"><label class="form-label" for="projTitle">Project Title <span class="text-danger">*</span></label><input type="text" id="projTitle" name="projTitle" class="form-control" placeholder="Project Name"><div class="invalid-feedback">Please enter the project title.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="projStack">Tech Stack <span class="text-danger">*</span></label><input type="text" id="projStack" name="projStack" class="form-control" placeholder="e.g., Node.js, ChartJS, SQLite"><div class="invalid-feedback">Please enter the tech stack.</div></div>
+                    <div class="col-md-6"><label class="form-label" for="projLink">GitHub/Demo Link</label><input type="text" id="projLink" name="projLink" class="form-control" placeholder="https://github.com/..."></div>
+                    <div class="col-md-6"><label class="form-label" for="projCompletionDate">Completion <span class="text-danger">*</span></label><input type="month" id="projCompletionDate" name="projCompletionDate" class="form-control"><div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="chkProjectPresent" name="chkProjectPresent" onchange="togglePresent(this, 'projCompletionDate')"><label class="form-check-label" for="chkProjectPresent">This project is in progress</label></div><div class="invalid-feedback">Please enter the completion date.</div></div>
                 </div>`
         }
         fetchVaultData('projects', 'vault-list-projects')
@@ -429,9 +429,9 @@ export function switchTab(tab) {
         if (formContainer) {
             formContainer.innerHTML = `
                 <div class="card p-3 mb-4 border-primary">
-                    <h5>Enter Target Job Details</h5>
+                    <label class="form-label fw-bold" for="jobTargetDesc">Enter Target Job Details</label>
                     <p class="small text-muted">Paste the job description you are applying for below.</p>
-                    <textarea id="jobTargetDesc" class="form-control mb-3" rows="5" placeholder="Paste job description here..."></textarea>
+                    <textarea id="jobTargetDesc" name="jobTargetDesc" class="form-control mb-3" rows="5" placeholder="Paste job description here..."></textarea>
                     <button class="btn btn-primary w-100" onclick="generateResume()">
                         <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generate Tailored Resume
                     </button>
@@ -454,8 +454,8 @@ export function switchTab(tab) {
                     </button>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Name this Resume</label><span class="text-danger">*</span>
-                    <input type="text" id="saveJobTitle" class="form-control" placeholder="Save as..."><div class="invalid-feedback">Please enter a name for this resume.</div>
+                    <label class="form-label fw-bold" for="saveJobTitle">Name this Resume <span class="text-danger">*</span></label>
+                    <input type="text" id="saveJobTitle" name="saveJobTitle" class="form-control" placeholder="Save as..."><div class="invalid-feedback">Please enter a name for this resume.</div>
                     <small class="text-muted">This is how it will appear in your vault.</small>
                 </div>
             `
