@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: gocandidit-app
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      - SINGLE_USER_MODE=true
+    volumes:
+    # mount SQLite db directory so data persists across container restarts
+      - sqlite_data:/app/database
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
