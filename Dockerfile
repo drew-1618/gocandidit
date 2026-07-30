@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8000
 
 # start app
-CMD ["node", "start"]
+CMD ["node", "server.js"]
